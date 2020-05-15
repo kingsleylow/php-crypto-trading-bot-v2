@@ -2,7 +2,6 @@ backtesting_results
 simulations/*
 med.php
 conf.json
-vendor
 conf.*
 all_pids.json
 conf.json
