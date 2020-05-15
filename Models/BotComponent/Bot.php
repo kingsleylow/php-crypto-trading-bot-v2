@@ -1,6 +1,6 @@
 <?php
 namespace Models\BotComponent;
-
+//to do: genrealize exhange functions and  extact each excahnge to diffrent class, with base, baseExchange, all functions should be abstract
 class Bot {
     private $strategies = [];
     private $opens=[];
@@ -24,148 +24,320 @@ class Bot {
 	public $sim_id;
     public $telegram=null;
     private $api;
-    
-    function __construct(){
-        global $cli_args,$instances_on_start,$bot_settings,$filesCls,$colors,$on_the_fly_file,$api,$client,$user_settings;
-        $this->signals_cls = new Signals;
-        $this->strategies_cls= new Strategies;
-		if(isset($user_settings->comm->telegram->bot_toekn) && isset($user_settings->comm->telegram->tele_user_id)){
-			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
-			
-		}
+    private $filesCls;
+    private $mainCoinToTradeVersus = "BTC";
 
-        //$this->strategies = $this->strategies_cls->active_strategies;
-        $this->colors = $colors;
-        if(!isset($cli_args['--name'])){
-            $filesCls->addContent($this->colors->error("Instance must have a --name argument"));
+    public function run(){
+        $this->addApiLoopTimers();
+        if($this->isBacktesting){
+            $this->runBackTesting();
             die();
         }
-        if(isset($cli_args['--backtesting'])){
-            $this->thisInstance["simulator"] = true;
-            register_shutdown_function('remove_pid_from_file',getmypid(),$bot_settings->all_pids_file);
-        }
-        //$filesCls->register_pid_to_file($cli_args['--name']."- WSBOT -(".date('H:i, d/m').")");
-        $name=$cli_args['--name'];
-        $filesCls->addContent("phpCryptoTradingBotV0.1///$name///");
-        //print_r($instances_on_start);
-        if(isset($instances_on_start[$cli_args['--name']]) || isset($cli_args['--onTheFly'])){
-            if(isset($cli_args['--onTheFly'])){
-                if(!file_exists($on_the_fly_file)){
-                    $filesCls->addContent($this->colors->error("file '$on_the_fly_file' does not exist, new instance shutdown, cannot load --onTheFly"));
-                    die();                   
-                }
-                $instances_on_the_fly = json_decode(file_get_contents($on_the_fly_file),true);
-                $this->thisInstance = $instances_on_the_fly[$name];
-                $filesCls->addContent($this->colors->info("ON THE FLY Fired up with these settings: ".json_encode($instances_on_the_fly[$name], JSON_PRETTY_PRINT)));
-                
-                
-            }else{
-                $this->thisInstance = $instances_on_start[$cli_args['--name']];
-            }
-            $this->ignore_coins = $this->thisInstance["ignore_coins"];
+        $this->startLoop();
+    }
 
-            $this->include_coins = $this->thisInstance["include_coins"];
-            $this->min_vol = $this->thisInstance["min_vol"];
-            $this->timeframe = $this->thisInstance["timeframe"];
-            $this->sell_only_mode = $this->thisInstance["sell_only_mode"];
-            $this->max_open_signals = $this->thisInstance["max_open_signals"];
-			$this->max_btc_per_trade = $this->thisInstance["max_btc_per_trade"];
-            $this->simulator = $this->thisInstance["simulator"];
-			$this->xchnage = $this->thisInstance["exchange"];
-			$this->sim_id = mktime().rand().$this->xchnage;
-            $GLOBALS['isSimulator'] = $this->thisInstance["simulator"];
-            $filesCls->addContent($GLOBALS['isSimulator'] ? $this->colors->warning("SIMULATION MODE") : $this->colors->info("REAL TRADES MODE"));
-            
-			//check exhange
-			if($this->xchnage === "binance"){
-                $this->api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
-                $api = $this->api;
+    private function runBackTesting(){
+        $this->filesCls->addContent($this->colors->info("Starting backtesting on ".count($this->coins_array)." coins ... "));
+        //print_r($bot->coins_array);
+        foreach($this->coins_array as $coinName){//$coinName is market
+			if($this->xchnage==="binance"){
+				$OHLVC = $this->api->candlesticks($coinName, $this->timeframe,2000);
 			}
-			else if($this->xchnage === "bittrex"){
-				$client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
-                $this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
-                $api = $this->api;
-
-			}
-			$filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
-            //fill strategies
-            $filesCls->addContent($this->colors->info("Loading Strategies ... "));
-            foreach($this->thisInstance["strategy"] as $sName){
-                if($sName==="allActive"){
-                    $this->strategies = $this->strategies_cls->active_strategies; 
-                    //print_r($this->strategies);
-                    //die();
-                }else{
-                    if(isset($this->strategies_cls->strategies[$sName]) && !isset($this->strategies[$sName])){
-                      $this->strategies[$sName] = $this->strategies_cls->strategies[$sName];        
-                       // $filesCls->addContent($this->colors->info("Loaded Strategy:  $sName".PHP_EOL));
-                    } 
-                    else if(isset($this->strategies[$sName])){
-                        $filesCls->addContent($this->colors->warning("Already loaded $sName ..."));
-                    }
-                    else{
-                        $filesCls->addContent($this->colors->error("Could not load strategy $sName ... "));
-                    }
-
-                }
+            else if($this->xchnage==="bittrex"){
+				$OHLVC = $this->btrx_candles[$coinName];
             }
-            //print_r($this->strategies);
+            // $OHLVC = $this->getOHLV($coinName); for above, to extarct to base 15/05/2020
+            //print_r($OHLVC);
             //die();
-            foreach($this->strategies as $strat_name=>$sta){
-                        $filesCls->addContent($this->colors->info("Loaded Strategy:  $strat_name".PHP_EOL));
-                    }
-            //$filesCls->addContent($this->colors->info("Loaded Strategies: ".json_encode($this->strategies, JSON_PRETTY_PRINT).PHP_EOL));
-            //$filesCls->addContent($this->colors->info("Loaded Strategies: ".json_encode($loaded_s).PHP_EOL));
-            
-            
-        }else{
-            $filesCls->addContent($this->colors->error("could not find instance name on conf.json or other instance file"));
-            die();
+            for($i=100;$i<count($OHLVC);$i++){ //change 100 to $candlesToTest and get data from json
+                $reply = $this->checkOHLVCforSignals(array_slice($OHLVC,0,$i),$coinName);
+                //print_r($reply);
+            }
+            $this->filesCls->addContent($this->colors->info("DONE: $coinName, candles checked:".count($OHLVC)));
         }
-            //print_r($this->strategies);
-        //$this->strategies = $strategies;//for now its taking strategies from $this->strategies_cls->active_strategies
-        //$this->min_vol = $min_vol;
+        $this->filesCls->addContent($this->colors->info("Finished backtesting on ".count($this->coins_array)." coins ... Bye now."));
+        die();
+    }
+
+    private function startLoop(){
+        global $cli_args,$bot_settings,$filesCls,$cmnds,$api,$data;
+        //if simulation or real trade mode
+        $empry_arr_count = 0;
+        $count = 0;
+        while(true){
+            $banned = false;
+        
+		    if($bot->xchnage === "binance"){
+                $api = $this->api;
+    	        $this->api->chart($this->coins_array, $this->timeframe, function($api, $symbol, $chart) use(&$count,$bot,&$settings,&$data,&$empry_arr_count,&$banned) {
+                    global $cli_args,$bot_settings,$filesCls,$cmnds,$api;
+                    $reply = $bot->checkOHLVCforSignals($chart,$symbol);
+    			    if($reply===null){
+	    			    $empry_arr_count++;
+		    	    }
+			        else{
+				    if($banned){
+    					$pids_data = $filesCls->getPIDFileCon();
+	    				$pids_data1 = json_decode($pids_data[getmypid()],true);
+		    			unset($pids_data1['no_ws_connection']);
+			    		$filesCls->register_pid_to_file(json_encode($pids_data1));						
+				    }
+    				$banned = false;
+	    			$empry_arr_count = 0;
+		    	}
+			    if($empry_arr_count > 20){
+    				$filesCls->addContent(" sleeping for 35 minutes, probaly banned from binance, 20+ empy arrays ... ");
+	    			$empry_arr_count = 0;
+		    		if($bot->telegram!==null){
+			    		$bot->telegram->sendMessage(" sleeping for 5 minutes and then connecting again, probaly banned from binance, 20+ empy arrays ... ");
+                        
+    				}
+	    			//die();//temp solution
+	                $api->loop->stop(); 
+			    	if(!$banned){
+				    	$pids_data = $filesCls->getPIDFileCon();
+					    $pids_data1 = json_decode($pids_data[getmypid()],true);
+    					$pids_data1['no_ws_connection'] = "true";
+	    				$filesCls->register_pid_to_file(json_encode($pids_data1));				
+		    		}
+
+    				sleep(60*10);
+                 $bot->fillCoinsArr();
+                    $filesCls->addContent("Tried to reconnect");
+		    	}
+                print_r($reply);
+                if($count>400){
+                    //if coin list has changed, stop loop and the restart it later in code to   update subscriptions;
+                    // stop bot, reload conf.json, reload coins etc..
+                    $active_coins = count($bot->coins_array);
+                    $filesCls->addContent("  still running (400 live trades proccessed, $active_coins active coins) ... ");
+                    //$settings = json_decode($data);//reload settings
+                    $count=0;
+                    
+                }
+                $count++;
+                //echo $reply !== null ? $reply : "nohing to do here.. keep moving\n";
+                },2000);
+        	    sleep(30); 			
+		    }
+		    else if($this->xchnage === "bittrex"){
+			$this->api->on("corehub", "updateSummaryState", function($data) {
+				global $filesCls,$bot;
+    			//print_r($data);
+				//die();
+				//print_r($bot->btrx_coins_format);
+				$latest_trades_all_markets = $data->Deltas;
+				$latest_trade_per_market = [];
+				foreach($latest_trades_all_markets as $trade){
+					if(isset($bot->btrx_coins_format[$trade->MarketName])){// check if the trade is in the bot coin list
+						$latest_trade_per_market[$trade->MarketName] = $trade;		//check only the latest trade sent per cin.. old ones doesnt matter..			
+					}
+					
+				}
+				foreach($latest_trade_per_market as $market=>$trade){
+					$tmp = $bot->to_market_format("binance",[$market]);
+					$market = $tmp[0];
+					$latest_trade = [];
+					//print_r(array_keys($bot->btrx_candles));
+					//die();
+					if(isset($bot->btrx_candles[$market])){
+						$bot->btrx_candles[$market][count($bot->btrx_candles[$market])-1]['close'] = $trade->Last;
+						$reply = $bot->checkOHLVCforSignals($bot->btrx_candles[$market],$market);
+        				print_r($reply);
+					//die();					
+					}
+					else{
+						echo "no candle array yet";
+					}
+				}
+				//print_r($latest_trade_per_market);
+				echo "Checked ".count($latest_trade_per_market)." Trades";
+				$filesCls->addContent("Checked ".count($latest_trade_per_market)." Trades");
+			    });
+			    $this->api->run();
+		    }
+
+        }
+    }
+
+    private function addApiLoopTimers(){
+        //api loop
+        if(is_null($this->api->loop)){
+            $filesCls->addContent("no loop for api, exchnage: $bot->xchnage, api: ".print_r($this->api, true));
+            return;
+        }
+        $this->addTimeCheckOpenOrders();
+        $this->addTimerExecCommands();
+        $this->addTimerReloadOHLVC();
+        // api loop end
+    }
+
+    private function addTimerReloadOHLVC(){
+        if($bot->xchnage==="bittrex"){
+            $api->loop->addPeriodicTimer(60,function() use (&$bot) {
+                global $filesCls;
+                $bot->fill_btrx_candles();
+                $filesCls->addContent("Reloaded OHLVC for all bittrex coins");
+                
+            });
+        }
+    }
+
+    private function addTimerExecCommands(){
+        $cmnds = $this->cmnds;
+        $this->api->loop->addPeriodicTimer(2, function() use ($cmnds) { //echk every 60 seconds 
+            $cmnds->checkAndexecNewCommands();
+        });
+    }
+
+    private function addTimerCheckOpenOrders(){
+        if ($GLOBALS['isSimulator']===true  || is_null($this->api->loop)) {
+            return;
+        }
+        $client = $this->client;
+        $api = $this->api;
+        $bot = $this;
+        $this->api->loop->addPeriodicTimer(60, function() use (&$bot,$api,$client) { //echk every 60 seconds if open signals waiting for purchase or sell are filled
+        //maybe add also checkAndexecNewCommands in diffrent timer, this one runs only on real trade mode
+            foreach($bot->signals as $strategy=>$signals){
+                foreach($signals as $market_name=>$signal){
+                    if ($signal['status']=='active') {
+                        continue;
+                    }
+                    if(!isset($signal['orderId']) && isset($signal['uuid'])){
+                        $signal['orderId'] = $signal['uuid'];
+                        // i dont remeber if i use uuid or orderId and when :\
+                    }
+                    if($bot->xchnage === "binance"){
+                        $orderstatus = $api->orderStatus($market_name, $signal['orderId']);
+                    }
+                    else if($bot->xchnage === "bittrex"){
+                        $tmp = json_decode(json_encode($client->getOrder($signal['orderId'])), true);
+                        $order['status'] =$tmp['Closed'];
+                        if($order['status']!==null){
+                            $orderstatus['orderStatus'] = "FILLED";
+                        }
+                        //$order['clientOrderId'] = $order['uuid'];
+                        //do the magic here.. check if order is closed and update accordingy
+                    }
+                    if(isset($orderstatus['orderStatus'])){
+                        continue;
+                                //unset($bot->signals[$strategy][$market_name]);
+                    }
+                    if ($orderstatus['orderStatus'] !== "FILLED") {
+                        continue;
+                    }
+                    if($bot->telegram!==null){
+                        $bot->telegram->sendMessage(" Order executed @  ".$bot->xchnage." Details: ".print_r($bot->signals[$strategy][$market_name]));						
+                    }
+            
+                    $bot->signals[$strategy][$market_name]['status'] = $bot->signals[$strategy][$market_name]['status'] === 'WaitingForPurchase' ? 'active' : 'finished';
+                            //add here the actual price the trade ended and update into db the sell price, $final_price = $orderstatus['price']; $signal['status'] = $final_price; 
+                    if($bot->signals[$strategy][$market_name]['status']==="active"){
+                            //send update to db about signal status, $signal['status']="active";
+                            
+                    }
+                    else if($bot->signals[$strategy][$market_name]['status']==="finished"){
+                        //send update to db before unsetting the var, $signal['status']="finished"
+                        unset($bot->signals[$strategy][$market_name]);
+                    }                 
+                }
+            }
+        });
+    }
+
+    public function init(){
+        if(isset($user_settings->comm->telegram->bot_toekn) && isset($user_settings->comm->telegram->tele_user_id)){
+			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
+        }
+        $this->cmnds = new Commands();
+        $this->initBotDataFromCliArgs();
+        $this->initInstanceSettingsFromFile();
+        $this->initApiAndSocket();
+        $this->fillStrategies();
         $this->signals = $this->signals_cls->getOpeningSignals($this->strategies,$this->timeframe,$this->xchnage);
-        //print_r($this->signals);
-        //die();
-        //$filesCls->addContent($this->colors->info("Added ".count($this->signals)." signals from file"));
-        
-        
-        
-        $this->fillCoinsArr();
-		if($this->xchnage==="bittrex"){
-			$this->fill_btrx_candles();
+        $this->fillCandles();
+        $this->registerPid();
+        if($this->telegram!==null){
+			$this->telegram->sendMessage("started ".$this->cli_args['--name']);
 		}
 		
-        //print_r($this->strategies);
-        //sleep(90);
-        //die('i started and died');
-            /*
-            {
-        "coins": ["BNBBTC","ADABTC","NEOBTC"],
-        "strats": ["ema2050_crossover","pSARswtich"]
+        echo "started ".$this->cli_args['--name'].PHP_EOL;
+        
     }
-    */
-        
 
-        
+    private function registerPid(){
         $to_pid['coins'] = $this->coins_array;
         $to_pid['strats'] = array_keys($this->strategies);
-        $to_pid['name'] = $cli_args['--name'];
+        $to_pid['name'] = $this->cli_args['--name'];
 		$to_pid['exchange'] = $this->xchnage;
 		$to_pid['isSimulator'] = $GLOBALS['isSimulator'];
 		$to_pid['timeframe'] = $this->timeframe;
 		if($this->sell_only_mode){
 			$to_pid['SOM'] = true;
 		}
-        $filesCls->register_pid_to_file(json_encode($to_pid));
-        $filesCls->addContent($this->colors->success("Bot instance created successfully ..."));
-		if($this->telegram!==null){
-			$this->telegram->sendMessage("started ".$cli_args['--name']);
-		}
-		
-        echo "started ".$cli_args['--name'].PHP_EOL;
+        $this->filesCls->register_pid_to_file(json_encode($to_pid));
+        $this->filesCls->addContent($this->colors->success("Bot instance created successfully ..."));
     }
+
+    private function fillCandles(){
+        $this->fillCoinsArr();
+                
+		if($this->xchnage==="bittrex"){
+			$this->fill_btrx_candles();
+		}
+    }
+
+    private function fillStrategies(){
+        $this->filesCls->addContent($this->colors->info("Loading Strategies ... "));
+        foreach($this->thisInstance["strategy"] as $sName){
+            if($sName==="allActive"){
+                $this->strategies = $this->strategies_cls->active_strategies; 
+                //print_r($this->strategies);
+                //die();
+            }else{
+                if(isset($this->strategies_cls->strategies[$sName]) && !isset($this->strategies[$sName])){
+                  $this->strategies[$sName] = $this->strategies_cls->strategies[$sName];        
+                   // $this->filesCls->addContent($this->colors->info("Loaded Strategy:  $sName".PHP_EOL));
+                } 
+                else if(isset($this->strategies[$sName])){
+                    $this->filesCls->addContent($this->colors->warning("Already loaded $sName ..."));
+                }
+                else{
+                    $this->filesCls->addContent($this->colors->error("Could not load strategy $sName ... "));
+                }
+
+            }
+        }
+        foreach($this->strategies as $strat_name=>$sta){
+            $this->filesCls->addContent($this->colors->info("Loaded Strategy:  $strat_name".PHP_EOL));
+        }
+    }
+
+    private function initApiAndSocket(){
+        if($this->xchnage === "binance"){
+            $this->api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
+            $api = $this->api;
+        }
+        else if($this->xchnage === "bittrex"){
+            $this->client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
+            $this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
+            $api = $this->api;
+
+        }
+        $this->filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
+    }
+    
+    function __construct(){
+        global $cli_args,$instances_on_start,$bot_settings,$filesCls,$colors,$api,$client,$user_settings;
+        $this->signals_cls = new Signals;
+        $this->strategies_cls= new Strategies;
+        $this->filesCls = new FilesWork;;
+        $this->colors = $colors;
+        $this->cli_args = $cli_args;
+        $this->instances_on_start = $instances_on_start;
+    }
+
     public function fillCoinsArr(){
         global $filesCls,$cli_args;
         $this->coins_array = [];
@@ -177,15 +349,12 @@ class Bot {
         //die();
         foreach($this->signals as $strategy_name => $signal){
             $this->coins_array = array_merge($this->coins_array, array_keys($signal));
-
         }
-                    //print_r($this->coins_array);
-                //die();
         foreach($this->include_coins as $coin){
-            $this->coins_array[]=$coin."BTC";
+            $this->coins_array[]=$coin.$this->mainCoinToTradeVersus;
         }
 		foreach($this->ignore_coins as $coin){
-			if (($key = array_search($coin."BTC", $this->coins_array)) !== false) {
+			if (($key = array_search($coin.$this->mainCoinToTradeVersus, $this->coins_array)) !== false) {
     			unset($this->coins_array[$key]);
 			}
 		}
@@ -194,51 +363,52 @@ class Bot {
             return null; // if backtesting, do not take out coins
         }
         ////backtesting doesnt go below this poing in the function!!!!! /////
-        $pids_arr =$filesCls->getPIDFileCon();
-        if($pids_arr!==null){
-                foreach($pids_arr as $pid_num=>$pid_data){
-                    if($pid_num!==getmypid()){
-                        $pid_data = json_decode($pid_data,true);
-                        //print_r($pid_data);
-                        //die();
-                        if(isset($pid_data["strats"])){ 
-                            foreach($pid_data["strats"] as $strategy){
-                            if(isset($this->strategies[$strategy])){
-                                foreach($pid_data["coins"] as $coin_name){
-                                    foreach($this->coins_array as $index => $coin_n){
-                                        if($coin_n === $coin_name && $pid_data["timeframe"] === $this->timeframe && $pid_data["exchange"] === $this->xchnage && $GLOBALS['isSimulator'] === $pid_data['isSimulator'] ){
-                                            $filesCls->addContent("Ignoring $coin_name, running with same '$strategy' strategy on other instance named '".$pid_data['name']."'. ");
-                                            unset($this->coins_array[$index]);
-                                        }
-                                    }
-                                }
-                            }
-                            
+        $this->removeCoinsWithSameStretageyAndnTimeFrame();
+    }
+
+    private function removeCoinsWithSameStretageyAndnTimeFrame(){
+        $pids_arr =$this->filesCls->getPIDFileCon();
+        if($pids_arr == null){
+            return;
+        }
+        foreach($pids_arr as $pid_num=>$pid_data){
+            if ($pid_num==getmypid()) {
+                continue;
+            }
+            $pid_data = json_decode($pid_data,true);
+            //print_r($pid_data);
+            //die();
+            if (!isset($pid_data["strats"])) {
+                continue;
+            }
+            foreach($pid_data["strats"] as $strategy){
+                if (!isset($this->strategies[$strategy])) {
+                    continue;
+                }
+                foreach($pid_data["coins"] as $coin_name){
+                    foreach($this->coins_array as $index => $coin_n){
+                        if($coin_n !== $coin_name){
+                            continue;
                         }
-                       }
-                                                
+                        if($pid_data["timeframe"] !== $this->timeframe){
+                            continue;
+                        }
+                        if($pid_data["exchange"] !== $this->xchnage){
+                            continue;
+
+                        }
+                        if($GLOBALS['isSimulator'] !== $pid_data['isSimulator'] ){
+                            $this->filesCls->addContent("Ignoring $coin_name, running with same '$strategy' strategy on other instance named '".$pid_data['name']."'. ");
+                            unset($this->coins_array[$index]);
+                        }
                     }
                 }
-            }
-        $to_pid['coins'] = $this->coins_array;
-        $to_pid['strats'] = array_keys($this->strategies);
-        $to_pid['name'] = $cli_args['--name'];
-		$to_pid['exchange'] = $this->xchnage;
-		$to_pid['isSimulator'] = $GLOBALS['isSimulator'];
-		$to_pid['timeframe'] = $this->timeframe;
-				if($this->sell_only_mode){
-			$to_pid['SOM'] = true;
-		}
-        $filesCls->register_pid_to_file(json_encode($to_pid));
-        
-
-        
+            }                                 
+        }
     }
+
     public function get_top_x_coins($vol){
-        global $bot_settings,$filesCls;
-		
-		
-		
+        global $bot_settings;
 		if($this->xchnage === "bittrex"){
       $nonce=time();
     $uri="https://bittrex.com/api/v1.1/public/getmarketsummaries";
@@ -255,7 +425,7 @@ class Bot {
         }
         $coinsa=[];		
         for($i=0;$i<count($coins);$i++){
-            if($coins[$i]["BaseVolume"] >= $vol && strpos($coins[$i]["MarketName"],"BTC")===0){
+            if($coins[$i]["BaseVolume"] >= $vol && strpos($coins[$i]["MarketName"],$this->mainCoinToTradeVersus)===0){
                 $ignore = false;
                 foreach($this->ignore_coins as $key=>$coin){
                     if(strpos($coins[$i]["MarketName"],$coin)){
@@ -296,7 +466,7 @@ class Bot {
         }
         $coinsa=[];
         for($i=0;$i<count($coins);$i++){
-            if($coins[$i]["quoteVolume"] >= $vol && strpos($coins[$i]["symbol"],"BTC") > 2){
+            if($coins[$i]["quoteVolume"] >= $vol && strpos($coins[$i]["symbol"],$this->mainCoinToTradeVersus) > 2){
                 $ignore = false;
                 foreach($this->ignore_coins as $key=>$coin){
                     if(strpos($coins[$i]["symbol"],$coin)){
@@ -314,6 +484,56 @@ class Bot {
 		}
         return count($coinsa) > 0 ? $coinsa : [];
 
+    }
+
+    public function initBotDataFromCliArgs(){
+        if(!isset($this->cli_args['--name'])){
+            $this->filesCls->addContent($this->colors->error("Instance must have a --name argument"));
+            die();
+        }
+        if (!isset($this->instances_on_start[$cli_args['--name']]) && !isset($this->cli_args['--onTheFly'])) {
+            $this->filesCls->addContent($this->colors->error("could not find instance name on conf.json or other instance file"));
+            die();
+        }
+        if(isset($cli_args['--backtesting'])){
+            $this->thisInstance["simulator"] = true;
+            register_shutdown_function('remove_pid_from_file',getmypid(),$bot_settings->all_pids_file);
+        }
+        $this->name=$this->cli_args['--name'];
+        $this->isBacktesting = $this->cli_args['--backtesting'] ?? false;
+        $this->filesCls->addContent("phpCryptoTradingBotV0.1///$this->name///");
+    }
+
+    private function initInstanceSettingsFromFile(){
+        global $on_the_fly_file;
+        if(isset($this->cli_args['--onTheFly'])){
+            if(!file_exists($on_the_fly_file)){
+                $this->filesCls->addContent($this->colors->error("file '$on_the_fly_file' does not exist, new instance shutdown, cannot load --onTheFly"));
+                die();                   
+            }
+            $instances_on_the_fly = json_decode(file_get_contents($on_the_fly_file),true);
+            $this->thisInstance = $instances_on_the_fly[$name];
+            $this->filesCls->addContent($this->colors->info("ON THE FLY Fired up with these settings: ".json_encode($instances_on_the_fly[$this->name], JSON_PRETTY_PRINT)));
+            
+            
+        }else{
+            $this->thisInstance = $this->instances_on_start[$cli_args['--name']];
+        }
+
+        $this->ignore_coins = $this->thisInstance["ignore_coins"];
+
+        $this->include_coins = $this->thisInstance["include_coins"];
+        $this->min_vol = $this->thisInstance["min_vol"];
+        $this->timeframe = $this->thisInstance["timeframe"];
+        $this->sell_only_mode = $this->thisInstance["sell_only_mode"];
+        $this->max_open_signals = $this->thisInstance["max_open_signals"];
+        $this->max_btc_per_trade = $this->thisInstance["max_btc_per_trade"];
+        $this->simulator = $this->thisInstance["simulator"];
+        $this->xchnage = $this->thisInstance["exchange"];
+        $this->sim_id = mktime().rand().$this->xchnage;
+        $this->mainCoinToTradeVersus = $this->thisInstance['baseCoin'] ?? $this->mainCoinToTradeVersus;
+        $GLOBALS['isSimulator'] = $this->thisInstance["simulator"];
+        $this->filesCls->addContent($GLOBALS['isSimulator'] ? $this->colors->warning("SIMULATION MODE") : $this->colors->info("REAL TRADES MODE"));
     }
    
     private function intiate_OHLVC($OHLVC){
@@ -385,8 +605,8 @@ class Bot {
 		switch ($xchange){
 			case 'bittrex':
 				foreach($names_arr as $id => $name){
-					$tmp_name = explode("BTC",$name);
-						$names_arr[$id] = "BTC-".$tmp_name[0];
+					$tmp_name = explode($this->mainCoinToTradeVersus,$name);
+						$names_arr[$id] = "$this->mainCoinToTradeVersus-".$tmp_name[0];
 					}
 				
 				break;
@@ -417,7 +637,7 @@ class Bot {
             $what_to_do=$what_to_do1[0];
             if($what_to_do==="no array error"){
 				if($bot_settings->debug){
-                $filesCls->addContent($this->colors->error("$market passed empty array for indicators/OHLVC.")); 
+                $this->filesCls->addContent($this->colors->error("$market passed empty array for indicators/OHLVC.")); 
 				}
 				return null;
             }
@@ -475,7 +695,7 @@ class Bot {
                 $signal_arr['type'] = 'buy';
                 $signal_arr['max_spread'] = $starteg['buyCon']["maxSpreadCheckedPriceToAsk"];
                 if($this->signals_cls->proccess_buySignal($signal_arr)){
-                    $filesCls->addContent($this->colors->buy("BUY SIGNAL Proccessed".json_encode($signal_arr)));
+                    $this->filesCls->addContent($this->colors->buy("BUY SIGNAL Proccessed".json_encode($signal_arr)));
 					
                 }
 
@@ -490,7 +710,7 @@ class Bot {
                 $signal_arr['type'] = 'sell';
                 $signal_arr['max_spread'] = $starteg['sellCon']["maxSpreadCheckedPriceToBid"];
                 if($this->signals_cls->proccess_sellSignal($signal_arr)){
-                    $filesCls->addContent($this->colors->sell("SELL SIGNAL Proccessed".json_encode($signal_arr)));                   
+                    $this->filesCls->addContent($this->colors->sell("SELL SIGNAL Proccessed".json_encode($signal_arr)));                   
                 }
 
                 
@@ -500,7 +720,7 @@ class Bot {
                 //print_r($respond);
             }
         }
-        $filesCls->msgToWeb(json_encode(['latestScansData',$this->latest_scans()]),$market.$start);
+        $this->filesCls->msgToWeb(json_encode(['latestScansData',$this->latest_scans()]),$market.$start);
         return $respond;
     }
     

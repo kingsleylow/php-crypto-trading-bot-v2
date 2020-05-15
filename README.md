@@ -47,4 +47,5 @@ pass: 1234
 
 mkdir msgs_from_web
 mkdir msgs_to_web
-mkdie cmnds
+mkdir cmnds
+mkdir simulations
