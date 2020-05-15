@@ -42,7 +42,7 @@ class Main{
         global $bot_settings,$colors,$kill,$filesCls,$filename;
         if(file_exists("terminate.all")){
         sleep(3);//fix problem if file already exist before fireup, let new intance to register to pid first, then kill it
-        $pids_cls = new \Models\PIDS($bot_settings->all_pids_file);
+        $pids_cls = new \Models\PIDs($bot_settings->all_pids_file);
         foreach($pids_cls->pids as $pid=>$data){
             $data_arr = json_decode($data,true);
             $name = $data_arr['name'];
@@ -73,7 +73,7 @@ class Main{
     
     public function printToConsoleFromBots(){
         global $bot_settings,$filesCls,$colors;
-        $pids_cls = new \Models\PIDS($bot_settings->all_pids_file);
+        $pids_cls = new \Models\PIDs($bot_settings->all_pids_file);
         unset($pids_cls->pids[getmypid()]);
         foreach($pids_cls->pids as $pid=>$name){
             $file_content = file_get_contents($bot_settings->pids_log_folder."/".$pid.".pid.log");
@@ -95,7 +95,7 @@ class Main{
     
     public function execCommandsFromFE(){
         global $filesCls,$bot_settings,$finished_signals;
-        $pids_cls = new \Models\PIDS($bot_settings->all_pids_file);
+        $pids_cls = new \Models\PIDs($bot_settings->all_pids_file);
         unset($pids_cls->pids[getmypid()]);
     $msgs = glob($filesCls->msgs_from_web_folder.'*.{msg}', GLOB_BRACE);
     if(count($msgs)>0){

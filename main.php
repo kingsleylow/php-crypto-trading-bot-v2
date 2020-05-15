@@ -50,7 +50,7 @@ preg_match('/Current IP Address: \[?([:.0-9a-fA-F]+)\]?/', $externalContent, $m)
 $_SERVER['SERVER_ADDR'] = $m[1];
 $finished_signals=0;
 
-$pids_cls = new Models\PIDS($bot_settings->all_pids_file);
+$pids_cls = new Models\PIDs($bot_settings->all_pids_file);
 $filename = $bot_settings->all_pids_file;
 $main = new Models\Console\Main();
 
