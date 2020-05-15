@@ -24,6 +24,8 @@ $simulation_finished_trades = [];
 $latest_scan_results=[];
 $api;
 $client;
+$count = 0;
+$empry_arr_count = 0;
 print_r($cli_args);
 
 //to web: i am working on this coins: cins array, with these starts: startegy latest scan score and status (2/3 2/4 etc..)
