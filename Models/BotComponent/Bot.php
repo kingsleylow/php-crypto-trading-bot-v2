@@ -520,7 +520,7 @@ class Bot {
             
             
         }else{
-            $this->thisInstance = $this->instances_on_start[$cli_args['--name']];
+            $this->thisInstance = $this->instances_on_start[$this->cli_args['--name']];
         }
 
         $this->ignore_coins = $this->thisInstance["ignore_coins"];
