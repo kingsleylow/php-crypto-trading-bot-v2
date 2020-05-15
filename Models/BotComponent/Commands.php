@@ -9,12 +9,13 @@ class Commands{
     private $botSettings="";
     
     
-    function __construct($botObject){//get parent inst file system
+    function __construct(){//get parent inst file system
+        global $filesCls;
         global $settings;
         $this->myPid = getmypid();
         $this->commands_file = getmypid().".cmnd";
         $this->myCommands=[];
-        $this->fileSy = $botObject->filesCls;
+        $this->fileSy = $filesCls;
         $this->botSettings = &$settings;
         //$this->checkAndexecNewCommands();
         
