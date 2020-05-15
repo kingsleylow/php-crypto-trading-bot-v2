@@ -67,22 +67,22 @@ $main->startInstances();
 echo 'after instances start, before loop';
 $timer = 0;
 while(true){
-    echo "loop start, loops: $timer";
+    //echo "loop start, loops: $timer";
     //check for termination file
     $main->checkForProgramEnd();
-    echo "checked program end";
+    //echo "checked program end";
     //get messages from bots pids and print;
     $main->printToConsoleFromBots();
-    echo "checked print to console.";
+    //echo "checked print to console.";
     //execute commands from font-end
     $main->execCommandsFromFE();
-    echo "chekced print to console";
+    //echo "chekced print to console";
     //create_instances on the fly
     $main->startOnTheFlyInst();
-    echo "check on the fly instnaces";
+    //echo "check on the fly instnaces";
     // add btc balance to db each 30 minutes
 	$main->addBtcBalanceToDBPeri();
-	echo "some db in main";
+	//echo "some db in main";
     if($timer > 30 && !$main->checkSocketStatus()){//reload websocket if connection dropped
         foreach($pids_cls->pids as $pid=>$name){
             if(strpos(strtolower($name),"websocketserver")!==false){
