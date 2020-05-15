@@ -359,7 +359,8 @@ class Bot {
 			//print_r($obj);
 			$obj = $obj['result'];
 			if(!is_array($obj)){
-				var_dump($execResult);
+                var_dump($execResult);
+                continue;
 				//die();
 			}
 			foreach($obj as $index=>$candle){
@@ -372,7 +373,10 @@ class Bot {
 
 			
 			//sleep(60);
-		}
+        }
+        if(!is_array($this->btrx_candles)){
+            return;
+        }
 					print_r(array_keys($this->btrx_candles));
 			//die();
 	}
