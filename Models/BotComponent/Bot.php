@@ -67,7 +67,7 @@ class Bot {
         while(true){
             $banned = false;
         
-		    if($bot->xchnage === "binance"){
+		    if($this->xchnage === "binance"){
                 $api = $this->api;
     	        $this->api->chart($this->coins_array, $this->timeframe, function($api, $symbol, $chart) use(&$count,$bot,&$settings,&$data,&$empry_arr_count,&$banned) {
                     global $cli_args,$bot_settings,$filesCls,$cmnds,$api;
