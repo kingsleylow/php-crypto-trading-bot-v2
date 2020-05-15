@@ -69,7 +69,7 @@ abstract class WebSocketServer {
    * Main processing loop
    */
   public function run() {
-      $cmnds = new Models\BotComponent\Commands();
+      $cmnds = new \Models\BotComponent\Commands();
     while(true) {
       if (empty($this->sockets)) {
         $this->sockets['m'] = $this->master;
