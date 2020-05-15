@@ -247,11 +247,11 @@ class Bot {
     }
 
     public function init(){
-        global $user_settings;
+        global $user_settings, $settings;
         if(isset($user_settings->comm->telegram->bot_toekn) && isset($user_settings->comm->telegram->tele_user_id)){
 			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
         }
-        $this->cmnds = new Commands();
+        $this->cmnds = new Commands($this);
         $this->initBotDataFromCliArgs();
         $this->initInstanceSettingsFromFile();
         $this->initApiAndSocket();
@@ -333,7 +333,7 @@ class Bot {
         global $cli_args,$instances_on_start,$bot_settings,$filesCls,$colors,$api,$client,$user_settings;
         $this->signals_cls = new Signals;
         $this->strategies_cls= new Strategies;
-        $this->filesCls = new FilesWork();
+        $this->filesCls = new FilesWork;
         $this->colors = $colors;
         $this->cli_args = $cli_args;
         $this->instances_on_start = $instances_on_start;

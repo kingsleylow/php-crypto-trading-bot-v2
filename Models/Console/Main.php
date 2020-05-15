@@ -396,7 +396,7 @@ foreach( $instances_on_start as $name => $instance){
     $this->bgExec("php -q Executables".DIRECTORY_SEPARATOR."BotInstance.php --name=$name");
     sleep(3);
 }
-$untouched_sigs = count(json_decode("active_unass_signals.json",true));
+$untouched_sigs = count(json_decode("active_unass_signals.json",true) ?? []);
 if($untouched_sigs>0){
 $filesCls->addContent($colors->warning("There are $untouched_sigs untouched active signals,they ARE NOT BEING PROCCESSED due to lack of apropriate strategy file q bot instance to deal with them!"));
     }
