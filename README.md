@@ -43,3 +43,8 @@ The Bot GUI should be availabe at ip:8080
 user: Admin
 
 pass: 1234
+
+
+mkdir msgs_from_web
+mkdir msgs_to_web
+mkdie cmnds
