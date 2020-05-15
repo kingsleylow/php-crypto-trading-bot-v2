@@ -1,5 +1,5 @@
 vendor
 backtesting_results
-simulations
+simulations/*
 med.php
 conf.json
