@@ -25,7 +25,7 @@ $latest_scan_results=[];
 $api;
 $client;
 print_r($cli_args);
-echo "1111";die("sfsdda");
+
 //to web: i am working on this coins: cins array, with these starts: startegy latest scan score and status (2/3 2/4 etc..)
 
 
