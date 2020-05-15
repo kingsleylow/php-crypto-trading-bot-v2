@@ -4,7 +4,7 @@ namespace Models\FrontEnd\WebSocket;
 class EchoServer extends WebSocketServer {
   function __construct($addr, $port, $bufferLength) {
     parent::__construct($addr, $port, $bufferLength);
-    $this->userClass = 'MyUser';
+    $this->userClass = '\Models\FrontEnd\WebSocket\MyUser';
   }
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
   
