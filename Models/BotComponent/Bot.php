@@ -30,10 +30,13 @@ class Bot {
     public function run(){
         $this->filesCls->addContent("run start");
         $this->addApiLoopTimers();
+        $this->filesCls->addContent("timers added");
         if($this->isBacktesting){
+            $this->filesCls->addContent("backtesting start");
             $this->runBackTesting();
             die();
         }
+        $this->filesCls->addContent("before loop start");
         $this->startLoop();
     }
 
@@ -193,6 +196,7 @@ class Bot {
     }
 
     private function addTimerCheckOpenOrders(){
+        global $bot,$api,$client;
         if ($GLOBALS['isSimulator']===true  || is_null($this->api->loop)) {
             return;
         }
