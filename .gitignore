@@ -1,0 +1,5 @@
+vendor
+backtesting_results
+simulations
+strategies/*.json
+med.php

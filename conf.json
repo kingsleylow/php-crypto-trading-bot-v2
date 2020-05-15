@@ -1,0 +1,61 @@
+{
+    "user_data": {
+        "binance": {
+            "bnkey": "",
+            "bnsecret": ""
+        },
+        "bittrex": {
+            "btkey": "",
+            "btsecret": ""
+        },
+		"comm": {
+			"telegram": {
+				"bot_toekn": "",
+				"tele_user_id": ""
+			}	
+		},
+        "end_time": 1.0,
+        "echo_level": 0
+    },
+    "bot_settings": {
+        "active_bots_file": "active_bots.json",
+        "all_pids_file": "all_pids.json",
+        "pids_log_folder": "logs",
+        "strategies_dir": "strategies",
+		"debug": false,
+		"db": {
+			"hostname": "localhost",
+			"username": "root",
+			"password": "",
+			"db_name": "php_crypto_bot"
+		}
+    },
+    "bot_instances_on_start": {
+        "binance_pSARSwitch_vol700":{
+	    "exchange": "binance",
+            "strategy": ["pSARswitchBBandsVol.json"],
+            "min_vol": 1000,
+            "simulator": false,
+            "ignore_coins": ["DOGE","RDD","BTT"],
+            "include_coins": ["XLM"],
+            "timeframe": "5m",
+			"max_open_signals": "2",
+			"max_btc_per_trade": "0.001",
+			"sell_only_mode": true,
+            "backtesting": false
+        },
+        "bittrex_pSARSwitch_vol100":{
+			"exchange": "bittrex",
+            "strategy": ["pSARswitchBBandsVol.json"],
+            "min_vol": 300,
+            "simulator": true,
+            "ignore_coins": ["DOGE","RDD","BTT"],
+            "include_coins": ["XLM"],
+            "timeframe": "5m",
+			"max_open_signals": "2",
+			"max_btc_per_trade": "0.001",
+			"sell_only_mode": false,
+            "backtesting": false
+        }
+    }
+}
