@@ -93,7 +93,7 @@ $api->loop->addPeriodicTimer(60, function() use (&$bot,$api,$client) { //echk ev
     }
 });
 }
-var_dump($api);
+$filesCls->addContent(var_dump($api));
 if($bot->xchnage!=="bittrex" && $api->loop != null){
 $api->loop->addPeriodicTimer(60*60, function() use (&$bot,$api) {
 	global $filesCls;

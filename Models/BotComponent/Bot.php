@@ -78,11 +78,13 @@ class Bot {
             
 			//check exhange
 			if($this->xchnage === "binance"){
-				$this->api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
+                $this->api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
+                $api = $this->api;
 			}
 			else if($this->xchnage === "bittrex"){
 				$client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
-				$this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
+                $this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
+                $api = $this->api;
 
 			}
 			$filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
