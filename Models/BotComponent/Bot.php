@@ -60,7 +60,7 @@ class Bot {
     }
 
     private function startLoop(){
-        global $cli_args,$bot_settings,$filesCls,$cmnds,$api,$data;
+        global $cli_args,$bot_settings,$filesCls,$cmnds,$api,$data,$bot;
         //if simulation or real trade mode
         $empry_arr_count = 0;
         $count = 0;
