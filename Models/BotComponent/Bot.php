@@ -166,7 +166,7 @@ class Bot {
             $this->filesCls->addContent("no loop for api, exchnage: $this->xchnage, api: ".print_r($this->api, true));
             return;
         }
-        $this->addTimeCheckOpenOrders();
+        $this->addTimerCheckOpenOrders();
         $this->addTimerExecCommands();
         $this->addTimerReloadOHLVC();
         // api loop end
