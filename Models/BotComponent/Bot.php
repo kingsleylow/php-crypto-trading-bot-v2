@@ -22,7 +22,8 @@ class Bot {
 	public $btrx_candles;
 	public $btrx_coins_format;
 	public $sim_id;
-	public $telegram=null;
+    public $telegram=null;
+    private $api;
     
     function __construct(){
         global $cli_args,$instances_on_start,$bot_settings,$filesCls,$colors,$on_the_fly_file,$api,$client,$user_settings;
@@ -77,11 +78,11 @@ class Bot {
             
 			//check exhange
 			if($this->xchnage === "binance"){
-				$api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
+				$this->api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
 			}
 			else if($this->xchnage === "bittrex"){
 				$client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
-				$api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
+				$this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
 
 			}
 			$filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
@@ -862,5 +863,9 @@ class Bot {
         }
         return  $candles_data;*/
         
+    }
+
+    public function getApi(){
+        return $this->api;
     }
 }
