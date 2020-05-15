@@ -1,5 +1,5 @@
 <?php
-namespace Model\FrontEnd\WebSocket;
+namespace Models\FrontEnd\WebSocket;
 
 class WebSocketUser {
   public $socket;

@@ -1,5 +1,4 @@
 <?php
-
 namespace Models\FrontEnd\WebSocket;
 
 class MyUser extends WebSocketUser {
