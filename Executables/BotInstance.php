@@ -33,13 +33,11 @@ print_r($cli_args);
 
 $bot = new Models\BotComponent\Bot();
 $cmnds = new Models\BotComponent\Commands();
-
+$bot->init();
 $cli_args = $bot->cli_args;
 $filesCls = $bot->filesCls;
 $cmnds = $bot->cmnds;
 $api = $bot->getApi();
-$bot->init();
-
 $bot->run();
 // bwlo this point move to class bot
 //count is used to reload cinfig file from time to time, when count is 1000000, updates are bieng made;
