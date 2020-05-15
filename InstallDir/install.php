@@ -3,6 +3,9 @@ $conn = mysqli_connect("localhost", "root", "", "");
 if (file_exists("db.sql")) {
 
     print_r(restoreMysqlDB("db.sql", $conn));
+    if($response['type'] == "success"){
+        //delete install dir
+    }
 }
 
 function restoreMysqlDB($filePath, $conn)
