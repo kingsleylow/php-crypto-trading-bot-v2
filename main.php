@@ -62,10 +62,12 @@ $main->bgExec("php -S ".$_SERVER['SERVER_ADDR'].":8080 -t interface/ Executables
 
 
 //start bot instances
+$filesCls->addContent('before instances start');
 $main->startInstances();
+$filesCls->addContent('after instances start, before loop');
 $timer = 0;
 while(true){
-    
+    $filesCls->addContent("loop start, loops: $timer");
     //check for termination file
     $main->checkForProgramEnd();
     //get messages from bots pids and print;
