@@ -515,10 +515,8 @@ class Bot {
                 die();                   
             }
             $instances_on_the_fly = json_decode(file_get_contents($on_the_fly_file),true);
-            $this->thisInstance = $instances_on_the_fly[$name];
+            $this->thisInstance = $instances_on_the_fly[$this->name];
             $this->filesCls->addContent($this->colors->info("ON THE FLY Fired up with these settings: ".json_encode($instances_on_the_fly[$this->name], JSON_PRETTY_PRINT)));
-            
-            
         }else{
             $this->thisInstance = $this->instances_on_start[$this->cli_args['--name']];
         }
