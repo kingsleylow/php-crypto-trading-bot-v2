@@ -247,6 +247,7 @@ class Bot {
     }
 
     public function init(){
+        global $user_settings;
         if(isset($user_settings->comm->telegram->bot_toekn) && isset($user_settings->comm->telegram->tele_user_id)){
 			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
         }
