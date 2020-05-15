@@ -493,7 +493,7 @@ class Bot {
             $this->filesCls->addContent($this->colors->error("Instance must have a --name argument"));
             die();
         }
-        if (!isset($this->instances_on_start[$cli_args['--name']]) && !isset($this->cli_args['--onTheFly'])) {
+        if (!isset($this->instances_on_start[$this->cli_args['--name']]) && !isset($this->cli_args['--onTheFly'])) {
             $this->filesCls->addContent($this->colors->error("could not find instance name on conf.json or other instance file"));
             die();
         }
