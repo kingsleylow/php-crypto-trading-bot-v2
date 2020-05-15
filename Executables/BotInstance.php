@@ -35,6 +35,9 @@ $count = 0;
 $bot = new Models\BotComponent\Bot();
 $cmnds = new Models\BotComponent\Commands();
 $api = $bot->getApi();
+if(is_null($api->loop)){
+	$filesCls->addContent("no loop for api, exchnage: $bot->xchnage, api: ".print_r($api, true));
+}
 //count is used to reload cinfig file from time to time, when count is 1000000, updates are bieng made;
 if($GLOBALS['isSimulator']!==true && !is_null($api->loop)){
 $api->loop->addPeriodicTimer(60, function() use (&$bot,$api,$client) { //echk every 60 seconds if open signals waiting for purchase or sell are filled
