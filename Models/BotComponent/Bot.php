@@ -518,9 +518,11 @@ class Bot {
             $this->thisInstance = $instances_on_the_fly[$this->name];
             $this->filesCls->addContent($this->colors->info("ON THE FLY Fired up with these settings: ".json_encode($instances_on_the_fly[$this->name], JSON_PRETTY_PRINT)));
         }else{
-            $this->thisInstance = $this->instances_on_start[$this->cli_args['--name']];
+            $this->thisInstance = $this->instances_on_start[$this->name];
         }
-
+        if(empty($this->thisInstance)){
+            $this->filesCls->addContent('instance not found');die();
+        }
         $this->ignore_coins = $this->thisInstance["ignore_coins"];
 
         $this->include_coins = $this->thisInstance["include_coins"];
