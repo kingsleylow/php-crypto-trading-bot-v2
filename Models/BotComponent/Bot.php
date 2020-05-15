@@ -28,6 +28,7 @@ class Bot {
     private $mainCoinToTradeVersus = "BTC";
 
     public function run(){
+        $this->filesCls->addContent("run start");
         $this->addApiLoopTimers();
         if($this->isBacktesting){
             $this->runBackTesting();
