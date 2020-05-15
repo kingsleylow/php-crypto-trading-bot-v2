@@ -116,6 +116,7 @@ class ComposerStaticInit524925ceedf0dc088db9f1161df70323
 
     public static $classMap = array (
         'Binance\\API' => __DIR__ . '/..' . '/jaggedsoft/php-binance-api/php-binance-api.php',
+        'Binance\\RateLimiter' => __DIR__ . '/..' . '/jaggedsoft/php-binance-api/php-binance-api-rate-limiter.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

@@ -296,17 +296,17 @@
     },
     {
         "name": "jaggedsoft/php-binance-api",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "v0.5.18",
+        "version_normalized": "0.5.18.0",
         "source": {
             "type": "git",
             "url": "https://github.com/jaggedsoft/php-binance-api.git",
-            "reference": "db1620016d0ee4a33d47a9fc24464e98fcfa34ff"
+            "reference": "10a47428c43748188a892ab5b7e89c9806979ac7"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/jaggedsoft/php-binance-api/zipball/db1620016d0ee4a33d47a9fc24464e98fcfa34ff",
-            "reference": "db1620016d0ee4a33d47a9fc24464e98fcfa34ff",
+            "url": "https://api.github.com/repos/jaggedsoft/php-binance-api/zipball/10a47428c43748188a892ab5b7e89c9806979ac7",
+            "reference": "10a47428c43748188a892ab5b7e89c9806979ac7",
             "shasum": ""
         },
         "require": {
@@ -320,12 +320,13 @@
             "codacy/coverage": "dev-master",
             "phpunit/phpunit": "~6"
         },
-        "time": "2019-01-31T00:08:56+00:00",
+        "time": "2020-05-14T16:07:33+00:00",
         "type": "library",
-        "installation-source": "source",
+        "installation-source": "dist",
         "autoload": {
             "classmap": [
-                "php-binance-api.php"
+                "php-binance-api.php",
+                "php-binance-api-rate-limiter.php"
             ]
         },
         "notification-url": "https://packagist.org/downloads/",

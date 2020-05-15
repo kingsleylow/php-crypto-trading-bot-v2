@@ -5,7 +5,7 @@ namespace Models\Exchanges\Bittrex;
  * Bittrex API wrapper class
  * @author Edson Medina <edsonmedina@gmail.com>
  */
-class Models\Exchanges\Bittrex\ClientBittrexAPI
+class ClientBittrexAPI
 {
 	private $baseUrl;
 	private $apiVersion = 'v1.1';

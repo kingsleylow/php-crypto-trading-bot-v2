@@ -93,7 +93,7 @@ $api->loop->addPeriodicTimer(60, function() use (&$bot,$api,$client) { //echk ev
 });
 }
 var_dump($api);
-if($bot->xchnage!=="bittrex"){
+if($bot->xchnage!=="bittrex" && $api->loop != null){
 $api->loop->addPeriodicTimer(60*60, function() use (&$bot,$api) {
 	global $filesCls;
 	             //$api->loop->stop(); 
@@ -101,10 +101,13 @@ $api->loop->addPeriodicTimer(60*60, function() use (&$bot,$api) {
                 //$filesCls->addContent("Reloaded coins (once an hour)");
 }); //reload coins once an hour - for now only binance, bittrex start to run once more each stop, after 3 hours each rade is checked 3 times?
 }
-$api->loop->addPeriodicTimer(2, function() use ($cmnds) { //echk every 60 seconds 
+if($api->loop != null){
+	$api->loop->addPeriodicTimer(2, function() use ($cmnds) { //echk every 60 seconds 
     
-    $cmnds->checkAndexecNewCommands();
-});
+		$cmnds->checkAndexecNewCommands();
+	});
+}
+
 
 if($bot->xchnage==="bittrex"){
 	$api->loop->addPeriodicTimer(60,function() use (&$bot) {

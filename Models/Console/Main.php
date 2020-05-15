@@ -13,10 +13,10 @@ class Main{
 		$this->binance_api = null;
 		$this->bittrex_api = null;
 		if(isset($user_settings->binance->bnkey) && $user_settings->binance->bnkey !== ""){
-			$this->binance_api = new Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);		
+			$this->binance_api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);		
 		}
 		if(isset($user_settings->bittrex->btkey) && $user_settings->bittrex->btkey !== ""){
-			$this->bittrex_api = new Models\Exchanges\Bittrex\ClientBittrexAPI ($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
+			$this->bittrex_api = new \Models\Exchanges\Bittrex\ClientBittrexAPI ($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
 		}
 		$this->db = $database;
         

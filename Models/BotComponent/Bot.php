@@ -280,7 +280,7 @@ class Bot {
 		else if($this->xchnage === "binance"){
         $nonce=time();
         $uri="https://api.binance.com/api/v1/ticker/24hr";
-        $sign=hash_hmac('sha512',$uri);
+        $sign= @hash_hmac('sha512',$uri);
         $ch = curl_init($uri);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('apisign:'.$sign));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
