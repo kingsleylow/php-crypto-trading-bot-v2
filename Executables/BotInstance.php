@@ -32,7 +32,7 @@ print_r($cli_args);
 //["BNBBTC","NEOBTC","ETHBTC","XLMBTC","XRPBTC","ARKBTC","TUSDBTC","GASBTC","ONGBTC","LTCBTC","HOTBTC","STORJBTC","KMDBTC","MTLBTC","ADABTC"];
 
 $bot = new Models\BotComponent\Bot();
-$cmnds = new Models\BotComponent\Commands();
+$cmnds = new Models\BotComponent\Commands($bot);
 $bot->init();
 $cli_args = $bot->cli_args;
 $filesCls = $bot->filesCls;

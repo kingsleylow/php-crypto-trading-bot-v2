@@ -16,7 +16,7 @@ class Bot {
     public $thisInstance = [];
     public $timeframe;
     public $simulator = true;
-    private $colors = "";
+    public $colors = "";
 	public $xchnage = "";
     public $simulation_finished_trades =[];
 	public $btrx_candles;
@@ -24,7 +24,7 @@ class Bot {
 	public $sim_id;
     public $telegram=null;
     private $api;
-    private $filesCls;
+    public $filesCls;
     private $mainCoinToTradeVersus = "BTC";
 
     public function run(){
@@ -502,7 +502,7 @@ class Bot {
             register_shutdown_function('remove_pid_from_file',getmypid(),$bot_settings->all_pids_file);
         }
         $this->name=$this->cli_args['--name'];
-        $this->isBacktesting = $this->cli_args['--backtesting'] ?? false;
+        $this->isBacktesting = isset($this->cli_args['--backtesting']);
         $this->filesCls->addContent("phpCryptoTradingBotV0.1///$this->name///");
     }
 

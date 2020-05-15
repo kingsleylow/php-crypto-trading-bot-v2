@@ -21,8 +21,7 @@ class Commands{
     }
     
     public function checkAndexecNewCommands(){
-        global $settings,$filesCls;
-        $msgs = glob($filesCls->cmnds_folder.$this->myPid.'*.{cmnd}', GLOB_BRACE);
+        $msgs = glob($this->fileSy->cmnds_folder.$this->myPid.'*.{cmnd}', GLOB_BRACE);
         if(count($msgs)>0){//execute commands from font-end
         foreach($msgs as $msg) {
             $this->commands_file = $msg;
@@ -58,7 +57,7 @@ class Commands{
     }
     
     private function execAllCommands(){
-        global $colors,$api,$bot,$settings,$instances_on_start,$cli_args,$simulation_finished_trades;
+        global $colors,$api,$bot,$instances_on_start,$cli_args,$simulation_finished_trades;
         $files = $this->fileSy;
         foreach($this->myCommands as $command){
             $files->addContent($colors->info("Executing '$command' command from file ...")); 
