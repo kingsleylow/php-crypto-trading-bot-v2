@@ -81,7 +81,7 @@ class Bot {
 			}
 			else if($this->xchnage === "bittrex"){
 				$client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
-				$api = new \Models\Exchanges\Bittrex\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
+				$api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
 
 			}
 			$filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
