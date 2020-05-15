@@ -56,18 +56,18 @@ $main = new Models\Console\Main();
 
 //start ws
 $main->bgExec("php Executables".DIRECTORY_SEPARATOR."FrontEndWebSocketServer.php");//
-
+echo 'before web server start';
 //start web server
 $main->bgExec("php -S ".$_SERVER['SERVER_ADDR'].":8080 -t interface/ Executables".DIRECTORY_SEPARATOR."FrontEndWebServer.php > /dev/null 2>&1");
 
 
 //start bot instances
-$filesCls->addContent('before instances start');
+echo 'before instances start';
 $main->startInstances();
-$filesCls->addContent('after instances start, before loop');
+echo 'after instances start, before loop';
 $timer = 0;
 while(true){
-    $filesCls->addContent("loop start, loops: $timer");
+    echo "loop start, loops: $timer";
     //check for termination file
     $main->checkForProgramEnd();
     //get messages from bots pids and print;
