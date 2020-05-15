@@ -1,6 +1,6 @@
 <?php
 //killl all php.  ps -efw | grep php | grep -v grep | awk '{print $2}' | xargs kill
-require_once('init.php');
+require_once('../init.php');
 use Models\Exchanges\Bittrex\SignalR;
 
 
