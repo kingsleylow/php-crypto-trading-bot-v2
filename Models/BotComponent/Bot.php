@@ -319,11 +319,11 @@ class Bot {
 
     private function initApiAndSocket(){
         if($this->xchnage === "binance"){
-            $this->api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
+            $this->api = new \Binance\API($this->user_settings->binance->bnkey,$this->user_settings->binance->bnsecret);
             $api = $this->api;
         }
         else if($this->xchnage === "bittrex"){
-            $this->client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
+            $this->client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($this->user_settings->bittrex->btkey,$this->user_settings->bittrex->btsecret);
             $this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
             $api = $this->api;
 
@@ -339,6 +339,7 @@ class Bot {
         $this->colors = $colors;
         $this->cli_args = $cli_args;
         $this->instances_on_start = $instances_on_start;
+        $this->user_settings = $user_settings;
     }
 
     public function fillCoinsArr(){
