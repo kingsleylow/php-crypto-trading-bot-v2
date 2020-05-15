@@ -26,10 +26,10 @@ class Bot {
     
     function __construct(){
         global $cli_args,$instances_on_start,$bot_settings,$filesCls,$colors,$on_the_fly_file,$api,$client,$user_settings;
-        $this->signals_cls = new Models\Signals;
-        $this->strategies_cls= new Models\Strategies;
+        $this->signals_cls = new Signals;
+        $this->strategies_cls= new Strategies;
 		if(isset($user_settings->comm->telegram->bot_toekn) && isset($user_settings->comm->telegram->tele_user_id)){
-			$this->telegram = new Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
+			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
 			
 		}
 
@@ -77,11 +77,11 @@ class Bot {
             
 			//check exhange
 			if($this->xchnage === "binance"){
-				$api = new Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
+				$api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
 			}
 			else if($this->xchnage === "bittrex"){
-				$client = new Models\Exchanges\Bittrex\ClientBittrexAPI ($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
-				$api = new ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
+				$client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
+				$api = new \Models\Exchanges\Bittrex\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
 
 			}
 			$filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
