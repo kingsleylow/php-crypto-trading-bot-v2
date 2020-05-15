@@ -333,7 +333,7 @@ class Bot {
         global $cli_args,$instances_on_start,$bot_settings,$filesCls,$colors,$api,$client,$user_settings;
         $this->signals_cls = new Signals;
         $this->strategies_cls= new Strategies;
-        $this->filesCls = new FilesWork;;
+        $this->filesCls = new FilesWork();
         $this->colors = $colors;
         $this->cli_args = $cli_args;
         $this->instances_on_start = $instances_on_start;
