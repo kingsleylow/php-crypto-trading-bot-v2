@@ -163,7 +163,7 @@ class Bot {
     private function addApiLoopTimers(){
         //api loop
         if(is_null($this->api->loop)){
-            $filesCls->addContent("no loop for api, exchnage: $bot->xchnage, api: ".print_r($this->api, true));
+            $this->filesCls->addContent("no loop for api, exchnage: $this->xchnage, api: ".print_r($this->api, true));
             return;
         }
         $this->addTimeCheckOpenOrders();
@@ -173,9 +173,10 @@ class Bot {
     }
 
     private function addTimerReloadOHLVC(){
-        if($bot->xchnage==="bittrex"){
-            $api->loop->addPeriodicTimer(60,function() use (&$bot) {
-                global $filesCls;
+        $bot = $this;
+        $filesCls = $this->filesCls;
+        if($this->xchnage==="bittrex"){
+            $this->api->loop->addPeriodicTimer(60,function() use (&$bot, $filesCls) {
                 $bot->fill_btrx_candles();
                 $filesCls->addContent("Reloaded OHLVC for all bittrex coins");
                 
