@@ -1,7 +1,7 @@
 <?php
 namespace Models\BotComponent;
 
-class Bot {
+class BotBrain {
     private $strategies = [];
     private $opens=[];
     private $closes=[];
@@ -22,15 +22,14 @@ class Bot {
 	public $btrx_candles;
 	public $btrx_coins_format;
 	public $sim_id;
-    public $telegram=null;
-    private $api;
+	public $telegram=null;
     
     function __construct(){
         global $cli_args,$instances_on_start,$bot_settings,$filesCls,$colors,$on_the_fly_file,$api,$client,$user_settings;
-        $this->signals_cls = new Signals;
-        $this->strategies_cls= new Strategies;
+        $this->signals_cls = new Models\Signals;
+        $this->strategies_cls= new Models\Strategies;
 		if(isset($user_settings->comm->telegram->bot_toekn) && isset($user_settings->comm->telegram->tele_user_id)){
-			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
+			$this->telegram = new Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
 			
 		}
 
@@ -78,13 +77,11 @@ class Bot {
             
 			//check exhange
 			if($this->xchnage === "binance"){
-                $this->api = new \Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
-                $api = $this->api;
+				$api = new Binance\API($user_settings->binance->bnkey,$user_settings->binance->bnsecret);
 			}
 			else if($this->xchnage === "bittrex"){
-				$client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
-                $this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
-                $api = $this->api;
+				$client = new Models\Exchanges\Bittrex\ClientBittrexAPI ($user_settings->bittrex->btkey,$user_settings->bittrex->btsecret);
+				$api = new ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
 
 			}
 			$filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
@@ -283,7 +280,7 @@ class Bot {
 		else if($this->xchnage === "binance"){
         $nonce=time();
         $uri="https://api.binance.com/api/v1/ticker/24hr";
-        $sign= @hash_hmac('sha512',$uri);
+        $sign=@hash_hmac('sha512',$uri);
         $ch = curl_init($uri);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('apisign:'.$sign));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -530,7 +527,7 @@ class Bot {
         $buy_cons_results=[];
         $sell_cons_results=[];
         foreach($strat['indicators'] as $indicator_name=>$value){
-            $indicators_arr[$indicator_name] = $this->fill_indicators([$indicator_name=>$value],$this->OHLVC);
+            $indicators_arr[$indicator_name] = fill_indicators([$indicator_name=>$value],$this->OHLVC);
             if(!is_array($indicators_arr[$indicator_name])){
                 return ["no array error",[],[]];
                 
@@ -620,254 +617,5 @@ class Bot {
                 break;
         }*/
             
-    }
-
-    private function fill_indicators($indi,$candles_data){
-
-        $highest_prices = $candles_data['highs'];
-        $lowest_prices= $candles_data['lows'];
-        $close_prices = $candles_data['closes'];
-        $volumes = $candles_data['vols'];
-        //print_r($close_prices);
-        $open_prices = $candles_data['opens'];  
-    $last_candle_open_price = $close_prices[count($close_prices)-1];
-    $last_candle_close_price = $open_prices[count($close_prices)-1];
-        foreach($indi as $name=>$setting){
-            $name= preg_replace('/[0-9]+/', '', $name);;
-            $filled = [];
-            switch($name){
-                case 'pSAR':
-                    return trader_sar($highest_prices,$lowest_prices,0.02,0.2);
-                    break;
-                case 'adx':
-                    if($setting===null || $setting < 1){
-                        $setting = 14;// set default to 20;
-                    }
-                    return trader_adx($highest_prices,$lowest_prices,$close_prices,$setting);
-                    break;
-                case 'adx_plus_di':
-                    if($setting===null || $setting < 1){
-                        $setting = 14;// set default to 20;
-                    }
-                    return trader_plus_di($highest_prices,$lowest_prices,$close_prices,$setting);
-                    break;
-                case 'adx_minus_di':
-                    if($setting===null || $setting < 1){
-                        $setting = 14;// set default to 20;
-                    }
-                    return trader_minus_di($highest_prices,$lowest_prices,$close_prices,$setting);
-                    break;
-                case 'avgV':
-                     $total_vol = 0;
-                    $vol_avg_period = $setting;
-                    $count1=0;
-                    $ca = count($volumes)-1;
-                    for($lki=$ca;$lki>=$ca-$vol_avg_period;$lki--){
-                        $total_vol += $volumes[$lki];
-                        //$candles_data[$ca]["avgV"] = array_sum($foo) / count($foo)
-                        $count1++;
-                    }
-                    $avgV = $total_vol / $count1;  	
-                    return array($avgV,$avgV);
-                    
-                    break;
-                case 'candleColor':
-                    $clr =  $last_candle_close_price - $last_candle_open_price;
-                    // $cl > 0 = green, cl<0 = red
-                    return array($clr,$clr);
-                    break;
-                case 'ema':
-                    if($setting===null || $setting < 1){
-                        $setting = 20;// set default to 20;
-                    }
-                    return trader_ema($close_prices,$setting);
-                    break;
-                case 'emaSpread':
-                    $emas = explode("|",$setting);
-                    $ema0 = $emas[0];
-                    $ema1 = $emas[1];
-                    $ema_spreads=[];
-                    $ema0_arr = trader_ema($close_prices,$ema0);
-                    $ema1_arr = trader_ema($close_prices,$ema1);
-                    $j=count($ema1_arr)-1;
-                    $po=0;
-                    for($i=count($ema0_arr)-1;$i>=0 && $j>=0;$i--){
-                        $ema0_t = array_pop($ema0_arr);
-                        array_unshift($ema_spreads,($ema0_t-array_pop($ema1_arr))/$ema0_t*100);
-                        $po++;
-                        if($po>100){
-                            $i=-1;//stop the loop after 100 spreads...
-                        }
-                        $j--;
-                    }//returns an array of spread % between ema0 and ema1, last var of array is latest spread
-                    //print_r($ema_spreads);
-                    return $ema_spreads;
-                case 'emaLastCrossover':
-                    $emas = explode("|",$setting);
-                    $ema0 = $emas[0];
-                    $ema1 = $emas[1];
-                    $ema_lastcrossover=[];
-                    $ema_spreads=[];
-                    $ema0_arr = trader_ema($close_prices,$ema0);
-                    $ema1_arr = trader_ema($close_prices,$ema1);
-                    $cnadles_ago = 0;
-                    $j=count($ema1_arr)-1;
-                    $i=count($ema0_arr)-1;
-                    if($ema0_arr[$i]-$ema1_arr[$j]>=0){
-                        $weare = 'pos';
-                    }
-                    else{
-                        $weare = 'neg';
-                    }
-                    $po=0;
-                    for($i=count($ema0_arr)-1;$i>=0 && $j>=0;$i--){
-                        $ema0_t = array_pop($ema0_arr);
-                        array_push($ema_spreads,($ema0_t-array_pop($ema1_arr))/$ema0_t*100);
-                        $j--;
-                        if($ema_spreads[count($ema_spreads)-1]>=0 && $weare ==='neg'){
-                            $i=-1;
-                        }
-                        else if($ema_spreads[count($ema_spreads)-1]<0 && $weare ==='pos'){
-                            $i=-1;
-                        }
-                        $cnadles_ago++;
-                    }//return last crossover of ems0 and ems1
-                    //print_r($ema_spreads);
-                    //echo $cnadles_ago;
-                    //die();
-                    return array($cnadles_ago,$cnadles_ago);
-                    break;
-                case 'rsi':
-                    if($setting===null || $setting < 1){
-                        $setting = 14;// set default to 20;
-                    }
-                    return trader_rsi($close_prices,$setting);
-                    break;
-                case 'bbands':
-                    $bbands =  trader_bbands($close_prices,20,2,2);
-                    switch($setting){
-                        case 'upper':
-                            return $bbands[0];
-                            break;
-                        case 'middle':
-                            return $bbands[1];
-                            break;
-                        case 'lower':
-                            return $bbands[2];
-                            break;
-                        default: 
-                            return null;
-                    }
-                    break;
-                default:
-                    return null;
-                    
-                
-            }
-               
-        }
-    
-       /* switch($indi){
-            case 'rsi':
-          $macds = trader_rsi($close_prices,14);
-        foreach($macds as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["rsi"] = $indicator_value;
-            
-        }
-                break;
-            case 'ema':
-          $macds = trader_ema($close_prices,200);
-          $macds2 = trader_ema($close_prices,50);
-          $macds3 = trader_ema($close_prices,10);
-        //$stoch = $macds[0];
-        //print_r($macds);
-        foreach($macds as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["ema_200"] = $indicator_value;
-            
-        }
-        foreach($macds2 as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["ema_50"] = $indicator_value;
-            
-        }
-        foreach($macds3 as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["ema_10"] = $indicator_value;
-            
-        }                 
-                break;
-            case 'trend_line':
-                $ang = trader_ht_trendline($close_prices);
-                $lin_ang = $ang;
-                print_r($lin_ang);
-                break;
-            case 'stoch':
-          $macds = trader_stoch($highest_prices,$lowest_prices,$close_prices,5,3,TRADER_MA_TYPE_SMA,3,TRADER_MA_TYPE_SMA);
-        $stoch = $macds[0];
-        //print_r($macds);
-        foreach($stoch as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["stoch"] = $indicator_value;
-            
-        }          
-                break;
-        case 'pSAR':
-            //print_r($highest_prices);
-            //$h_prices_pSAR[$i] = $candles_data[$i]["H"]*1000000;
-        $macds = trader_sar($h_prices_pSAR,$l_prices_pSAR,0.02,0.2);
-       // print_r($macds);
-        $pSAR = $macds;
-        foreach($pSAR as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["pSAR"] = $indicator_value/1000000;
-            
-        }
-            break;
-        case 'DMI':
-    $macds1 = trader_plus_di($highest_prices,$lowest_prices,$close_prices,12);
-    $macds2 = trader_minus_di($highest_prices,$lowest_prices,$close_prices,28);
-    $macds3 = trader_adx($highest_prices,$lowest_prices,$close_prices,28);
-    $all['plus_di'] = $macds1;
-    $all['minus_di'] = $macds2;
-    $all['adx'] = $macds3;
-        foreach($all['plus_di'] as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["adx_plus_di"] = $indicator_value;
-            
-        }
-        foreach($all['minus_di'] as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["adx_minus_di"] = $indicator_value;
-            
-        }
-        foreach($all['adx'] as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["adx"] = $indicator_value;
-            
-        }
-    //print_r($macds);
-    //echo json_encode($all);        
-            break;
-        case 'BBands':
-    $macds1 = trader_bbands($close_prices_bollinger,20,2,2);
-    //echo $close_prices_bollinger;
-    //print_r($macds1);
-        foreach($macds1[0] as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["bband_upper"] = $indicator_value/1000000;
-            
-        }
-        foreach($macds1[1] as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["bband_middle"] = $indicator_value/1000000;
-            
-        }
-        foreach($macds1[2] as $candle_id => $indicator_value){
-            $candles_data[$candle_id]["bband_lower"] = $indicator_value/1000000;
-            
-        }
-    //print_r($macds1);
-    //echo json_encode($all);        
-            break;
-            default:
-                break;
-        }
-        return  $candles_data;*/
-        
-    }
-
-    public function getApi(){
-        return $this->api;
     }
 }

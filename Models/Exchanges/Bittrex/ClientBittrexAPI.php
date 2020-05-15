@@ -34,7 +34,7 @@ class ClientBittrexAPI
 		if (!empty($params)) {
 			$uri .= '?'.http_build_query($params);
 		}
-		$sign = hash_hmac ('sha512', $uri, $this->apiSecret);
+		$sign = @hash_hmac ('sha512', $uri, $this->apiSecret);
 		$ch = curl_init ($uri);
 		curl_setopt ($ch, CURLOPT_HTTPHEADER, array('apisign: '.$sign));
 		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
