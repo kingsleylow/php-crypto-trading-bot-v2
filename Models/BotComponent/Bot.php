@@ -252,6 +252,7 @@ class Bot {
 			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
         }
         $this->cmnds = new Commands($this);
+        $this->filesCls->addContent("init start");
         $this->initBotDataFromCliArgs();
         $this->initInstanceSettingsFromFile();
         $this->initApiAndSocket();
