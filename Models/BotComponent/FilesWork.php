@@ -10,7 +10,7 @@ class FilesWork{
     public $cmnds_folder;
     
     function __construct(){
-        global $bot_settings;
+        global $bot_settings, $colors;
         $this->pid = getmypid();
         $this->pids_file_path = $bot_settings->all_pids_file;
         $this->bot_settings = $bot_settings;
@@ -18,6 +18,7 @@ class FilesWork{
         $this->msgs_to_web_folder = "msgs_to_web/";
         $this->msgs_from_web_folder="msgs_from_web/";
         $this->cmnds_folder="cmnds/";
+        $this->colors = $colors;
         
         @file_put_contents($this->log_file_path,"");
         ini_set("error_log", $this->log_file_path);
