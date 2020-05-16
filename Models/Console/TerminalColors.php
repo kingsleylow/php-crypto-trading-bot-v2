@@ -84,4 +84,4 @@ class TerminalColors {
         public function success($string){
             return $this->getColoredString($string,"green");
         }
-	}
+}

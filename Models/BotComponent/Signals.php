@@ -484,7 +484,7 @@ $simulation_finished_trades[$market]['details'] = ['startegy'=>$latest_candle['s
             $msg .= "Total Time: ".$minutes."m\n";
             $msg .= "Total Profit/Loss %: ".$olp."%\n";
 			$msg .= "Total Profit/Loss BTC: ".$btc_pl." btc\n";
-						$bot->telegram->sendMessage($msg);
+			$bot->telegram->sendMessage($msg);
 					}
                 //if order is not filled
                    $this->db->update('signals', $to_db,["id" => $id]);
