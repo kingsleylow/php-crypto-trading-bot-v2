@@ -4,7 +4,7 @@ namespace Models\BotComponent\Exchanges;
 abstract class Base{
 
     public static function getExchangeObject($exchange,$botObject){
-        $exchange = ucfirst($exchange);
+        $exchange = "\Models\BotComponent\Exchanges\\".ucfirst($exchange);
         return new $exchange($botObject);
     }
 
