@@ -40,7 +40,7 @@ class FilesWork{
     }
 
     public function debug($msg){
-        if($this->bot_settings->debug ?? false){
+        if($this->bot_settings->debug === false){
             return;
         }
         $this->addContent($this->colors->info($msg));
