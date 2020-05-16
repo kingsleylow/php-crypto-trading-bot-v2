@@ -5,6 +5,7 @@ namespace Models\BotComponent\Exchanges;
 class Bittrex extends Base{
 
     public function __construct($botObject){
+        $this->btrx_candles = [];
         parent::__construct($botObject);
     }
 
@@ -156,10 +157,8 @@ class Bittrex extends Base{
 				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['low'] = $candle['L'];
 				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['volume'] = $candle['BV'];
 			}
-
-			
-			//sleep(60);
         }
+        $this->botObject->filesCls->addContent('total coins added: '. count($this->btrx_candles));
         if(!is_array($this->btrx_candles)){
             return;
         }
