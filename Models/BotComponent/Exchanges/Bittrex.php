@@ -119,7 +119,7 @@ class Bittrex extends Base{
         $bot = $this->botObject;
         $filesCls = $this->botObject->filesCls;
         $this->api->loop->addPeriodicTimer(60,function() use (&$bot, $filesCls) {
-            $bot->fill_btrx_candles();
+            $bot->exchangeObject->fill_btrx_candles();
             $filesCls->addContent("Reloaded OHLVC for all bittrex coins");
         });
     }
@@ -143,17 +143,17 @@ class Bittrex extends Base{
     		$obj = json_decode($execResult, true);
 			//print_r($obj);
 			$obj = $obj['result'];
-			if(!is_array($obj)){
+            if (!is_array($obj)) {
                 var_dump($execResult);
                 continue;
-				//die();
-			}
+                //die();
+            }
 			foreach($obj as $index=>$candle){
-				$this->btrx_candles[$this->coins_array[$id]][$index]['open'] = $candle['O'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['close'] = $candle['C'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['high'] = $candle['H'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['low'] = $candle['L'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['volume'] = $candle['BV'];
+				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['open'] = $candle['O'];
+				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['close'] = $candle['C'];
+				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['high'] = $candle['H'];
+				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['low'] = $candle['L'];
+				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['volume'] = $candle['BV'];
 			}
 
 			
