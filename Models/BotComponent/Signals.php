@@ -100,7 +100,7 @@ class Signals{
                 $buy_price =  $all_prices[$market]['ask'];
 			}
 				else if($bot->xchnage === "bittrex"){
-					$coin_arr = $bot->to_market_format("bittrex",[$market]);
+					$coin_arr = $bot->exchangeObject->to_market_format("bittrex",[$market]);
 					$bp = $client->getTicker($coin_arr[0]);
 					$bp = json_decode(json_encode($bp), true);
 					$buy_price = $bp['Ask'];
@@ -145,7 +145,7 @@ class Signals{
 				   
 				   }
  				   else if($bot->xchnage === "bittrex"){
-					   $tmp = $bot->to_market_format("bittrex",[$market]);
+					   $tmp = $bot->exchangeObject->to_market_format("bittrex",[$market]);
 					   $order = $client->buyLimit($tmp[0], $quantity,$buy_price);
 					    $order = json_decode(json_encode($order), true);
 					   $tmp =  json_decode(json_encode($client->getOrder($order['uuid'])), true);
@@ -231,7 +231,7 @@ class Signals{
                 $buy_price =  $all_prices[$market]['ask'];
 			}
 				else if($bot->xchnage === "bittrex"){
-					$coin_arr = $bot->to_market_format("bittrex",[$market]);
+					$coin_arr = $bot->exchangeObject->to_market_format("bittrex",[$market]);
 					$bp = $client->getTicker($coin_arr[0]);
 					$bp = json_decode(json_encode($bp), true);
 					$buy_price = $bp['Ask'];
@@ -263,7 +263,7 @@ class Signals{
 				   
 				   }
  				   else if($bot->xchnage === "bittrex"){
-					   $tmp = $bot->to_market_format("bittrex",[$market]);
+					   $tmp = $bot->exchangeObject->to_market_format("bittrex",[$market]);
 					   $order = $client->buyLimit($tmp[0], $quantity,$buy_price);
 					    $order = json_decode(json_encode($order), true);
 					   $tmp =  json_decode(json_encode($client->getOrder($order['uuid'])), true);
@@ -361,7 +361,7 @@ class Signals{
                 $sell_price =  $all_prices[$market]['bid'];
 			}
 				else if($bot->xchnage === "bittrex"){
-					$coin_arr = $bot->to_market_format("bittrex",[$market]);
+					$coin_arr = $bot->exchangeObject->to_market_format("bittrex",[$market]);
 					$bp = $client->getTicker($coin_arr[0]);
 					$bp = json_decode(json_encode($bp), true);
 					$sell_price = $bp['Bid'];
@@ -421,7 +421,7 @@ $simulation_finished_trades[$market]['details'] = ['startegy'=>$latest_candle['s
 				   
 				   }
  				   else if($bot->xchnage === "bittrex"){
-					   $tmp = $bot->to_market_format("bittrex",[$market]);
+					   $tmp = $bot->exchangeObject->to_market_format("bittrex",[$market]);
 					   $order = $client->sellLimit($tmp[0], $quantity,$sell_price);
 					   $order = json_decode(json_encode($order), true);
 					   $tmp = json_decode(json_encode($client->getOrder($order['uuid'])), true);
