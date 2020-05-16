@@ -107,7 +107,7 @@ class Binance extends Base{
         for($i=0;$i<count($coins);$i++){
             if($coins[$i]["quoteVolume"] >= $vol && strpos($coins[$i]["symbol"],$this->botObject->mainCoinToTradeVersus) > 2){
                 $ignore = false;
-                foreach($this->ignore_coins as $key=>$coin){
+                foreach($this->botObject->ignore_coins as $key=>$coin){
                     if(strpos($coins[$i]["symbol"],$coin)){
                         $ignore=true;
                         //unset($this->ignore_coins[$key]);
