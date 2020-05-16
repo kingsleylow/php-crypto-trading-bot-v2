@@ -29,8 +29,9 @@ abstract class Base{
 		switch ($xchange){
 			case 'bittrex':
 				foreach($names_arr as $id => $name){
-					$tmp_name = explode($this->botObject->mainCoinToTradeVersus,$name);
-						$names_arr[$id] = "${$this->botObject->mainCoinToTradeVersus}-".$tmp_name[0];
+                    $tmp_name = explode($this->botObject->mainCoinToTradeVersus,$name);
+                    $baseCoin =$this->botObject->mainCoinToTradeVersus;
+						$names_arr[$id] = "$baseCoin-".$tmp_name[0];
 					}
 				
 				break;
