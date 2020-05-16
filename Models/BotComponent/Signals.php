@@ -385,7 +385,8 @@ class Signals{
 				else if(file_exists("backtesting_results/backtesting.".$bot->sim_id.".json")){
 					$simulation_finished_trades = json_decode(file_get_contents("backtesting_results/backtesting.".$bot->sim_id.".json"), true);
 				}
-                $latest_candle['close_time'] = date("H:i:s d/m");
+				$latest_candle['close_time'] = date("H:i:s d/m");
+				$simulation_finished_trades[$market] = $simulation_finished_trades[$market] ?? [];
  $simulation_finished_trades[$market]['details'] = ['startegy'=>$latest_candle['strat'], 'timeframe'=>$bot->timeframe, "exchange"=>$bot->xchnage,'total_closed_signals' => count($simulation_finished_trades[$market])];
                 
 $simulation_finished_trades[$market][] = ['buy'=>$bot->signals[$latest_candle['strat']][$market],"sell"=>$latest_candle, "profit_loss_percent"=> ($latest_candle['price']-$bot->signals[$latest_candle['strat']][$market]['price'])/$bot->signals[$latest_candle['strat']][$market]['price']*100];
