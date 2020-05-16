@@ -5,7 +5,6 @@ namespace Models\BotComponent\Exchanges;
 class Bittrex extends Base{
 
     public function __construct($botObject){
-        $this->client = $botObject->client;
         parent::__construct($botObject);
     }
 
