@@ -328,9 +328,9 @@ $usage[$pid]['cpu'] = 0;
     
     public function startOnTheFlyInst(){
         global $on_the_fly_file,$colors;
-        echo "on the fly out";
+        //echo "on the fly out";
             if(file_exists($on_the_fly_file)){
-        echo "on the fly in";
+        //echo "on the fly in";
     
         $instances_on_the_fly = json_decode(file_get_contents($on_the_fly_file),true);    
         //check for onthe fly instances status/fire up
@@ -352,7 +352,7 @@ $usage[$pid]['cpu'] = 0;
             
         
     }
-  echo "on the fly finish";
+  //echo "on the fly finish";
     }
     
     public function checkSocketStatus(){
