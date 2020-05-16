@@ -90,6 +90,7 @@ class Binance extends Base{
     }
 
     public function getCoinsByVolume($volume){
+        $vol = $volume;
         $nonce=time();
         $uri="https://api.binance.com/api/v1/ticker/24hr";
         $sign= @hash_hmac('sha512',$uri);

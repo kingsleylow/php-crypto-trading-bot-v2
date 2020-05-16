@@ -69,6 +69,7 @@ class Bittrex extends Base{
     }
 
     public function getCoinsByVolume($volume){
+        $vol = $volume;
         $nonce=time();
         $uri="https://bittrex.com/api/v1.1/public/getmarketsummaries";
         $sign=@hash_hmac('sha512',$uri);
