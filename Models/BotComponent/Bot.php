@@ -42,20 +42,10 @@ class Bot {
 
     private function runBackTesting(){
         $this->filesCls->addContent($this->colors->info("Starting backtesting on ".count($this->coins_array)." coins ... "));
-        //print_r($bot->coins_array);
         foreach($this->coins_array as $coinName){//$coinName is market
-			if($this->xchnage==="binance"){
-				$OHLVC = $this->api->candlesticks($coinName, $this->timeframe,2000);
-			}
-            else if($this->xchnage==="bittrex"){
-				$OHLVC = $this->btrx_candles[$coinName];
-            }
-            // $OHLVC = $this->getOHLV($coinName); for above, to extarct to base 15/05/2020
-            //print_r($OHLVC);
-            //die();
+            $OHLVC = $this->exchangeObject->getCoinOHLVC($coinName);
             for($i=100;$i<count($OHLVC);$i++){ //change 100 to $candlesToTest and get data from json
                 $reply = $this->checkOHLVCforSignals(array_slice($OHLVC,0,$i),$coinName);
-                //print_r($reply);
             }
             $this->filesCls->addContent($this->colors->info("DONE: $coinName, candles checked:".count($OHLVC)));
         }
@@ -69,98 +59,7 @@ class Bot {
         $empry_arr_count = 0;
         $count = 0;
         while(true){
-            $banned = false;
-        
-		    if($this->xchnage === "binance"){
-                $api = $this->api;
-    	        $this->api->chart($this->coins_array, $this->timeframe, function($api, $symbol, $chart) use(&$count,$bot,&$settings,&$data,&$empry_arr_count,&$banned) {
-                    global $cli_args,$bot_settings,$filesCls,$cmnds,$api;
-                    $reply = $bot->checkOHLVCforSignals($chart,$symbol);
-    			    if($reply===null){
-	    			    $empry_arr_count++;
-		    	    }
-			        else{
-				    if($banned){
-    					$pids_data = $filesCls->getPIDFileCon();
-	    				$pids_data1 = json_decode($pids_data[getmypid()],true);
-		    			unset($pids_data1['no_ws_connection']);
-			    		$filesCls->register_pid_to_file(json_encode($pids_data1));						
-				    }
-    				$banned = false;
-	    			$empry_arr_count = 0;
-		    	}
-			    if($empry_arr_count > 20){
-    				$filesCls->addContent(" sleeping for 35 minutes, probaly banned from binance, 20+ empy arrays ... ");
-	    			$empry_arr_count = 0;
-		    		if($bot->telegram!==null){
-			    		$bot->telegram->sendMessage(" sleeping for 5 minutes and then connecting again, probaly banned from binance, 20+ empy arrays ... ");
-                        
-    				}
-	    			//die();//temp solution
-	                $api->loop->stop(); 
-			    	if(!$banned){
-				    	$pids_data = $filesCls->getPIDFileCon();
-					    $pids_data1 = json_decode($pids_data[getmypid()],true);
-    					$pids_data1['no_ws_connection'] = "true";
-	    				$filesCls->register_pid_to_file(json_encode($pids_data1));				
-		    		}
-
-    				sleep(60*10);
-                 $bot->fillCoinsArr();
-                    $filesCls->addContent("Tried to reconnect");
-		    	}
-                print_r($reply);
-                if($count>400){
-                    //if coin list has changed, stop loop and the restart it later in code to   update subscriptions;
-                    // stop bot, reload conf.json, reload coins etc..
-                    $active_coins = count($bot->coins_array);
-                    $filesCls->addContent("  still running (400 live trades proccessed, $active_coins active coins) ... ");
-                    //$settings = json_decode($data);//reload settings
-                    $count=0;
-                    
-                }
-                $count++;
-                //echo $reply !== null ? $reply : "nohing to do here.. keep moving\n";
-                },2000);
-        	    sleep(30); 			
-		    }
-		    else if($this->xchnage === "bittrex"){
-			$this->api->on("corehub", "updateSummaryState", function($data) {
-				global $filesCls,$bot;
-    			//print_r($data);
-				//die();
-				//print_r($bot->btrx_coins_format);
-				$latest_trades_all_markets = $data->Deltas;
-				$latest_trade_per_market = [];
-				foreach($latest_trades_all_markets as $trade){
-					if(isset($bot->btrx_coins_format[$trade->MarketName])){// check if the trade is in the bot coin list
-						$latest_trade_per_market[$trade->MarketName] = $trade;		//check only the latest trade sent per cin.. old ones doesnt matter..			
-					}
-					
-				}
-				foreach($latest_trade_per_market as $market=>$trade){
-					$tmp = $bot->to_market_format("binance",[$market]);
-					$market = $tmp[0];
-					$latest_trade = [];
-					//print_r(array_keys($bot->btrx_candles));
-					//die();
-					if(isset($bot->btrx_candles[$market])){
-						$bot->btrx_candles[$market][count($bot->btrx_candles[$market])-1]['close'] = $trade->Last;
-						$reply = $bot->checkOHLVCforSignals($bot->btrx_candles[$market],$market);
-        				print_r($reply);
-					//die();					
-					}
-					else{
-						echo "no candle array yet";
-					}
-				}
-				//print_r($latest_trade_per_market);
-				echo "Checked ".count($latest_trade_per_market)." Trades";
-				$filesCls->addContent("Checked ".count($latest_trade_per_market)." Trades");
-			    });
-			    $this->api->run();
-		    }
-
+            $this->exchangeObject->runStreamLoop();
         }
     }
 
@@ -177,15 +76,7 @@ class Bot {
     }
 
     private function addTimerReloadOHLVC(){
-        $bot = $this;
-        $filesCls = $this->filesCls;
-        if($this->xchnage==="bittrex"){
-            $this->api->loop->addPeriodicTimer(60,function() use (&$bot, $filesCls) {
-                $bot->fill_btrx_candles();
-                $filesCls->addContent("Reloaded OHLVC for all bittrex coins");
-                
-            });
-        }
+        $this->exchangeObject->addTimerReloadOHLVC();
     }
 
     private function addTimerExecCommands(){
@@ -214,18 +105,7 @@ class Bot {
                         $signal['orderId'] = $signal['uuid'];
                         // i dont remeber if i use uuid or orderId and when :\
                     }
-                    if($bot->xchnage === "binance"){
-                        $orderstatus = $api->orderStatus($market_name, $signal['orderId']);
-                    }
-                    else if($bot->xchnage === "bittrex"){
-                        $tmp = json_decode(json_encode($client->getOrder($signal['orderId'])), true);
-                        $order['status'] =$tmp['Closed'];
-                        if($order['status']!==null){
-                            $orderstatus['orderStatus'] = "FILLED";
-                        }
-                        //$order['clientOrderId'] = $order['uuid'];
-                        //do the magic here.. check if order is closed and update accordingy
-                    }
+                    $orderstatus = $this->exchangeObject->getOrderStatus($signal['orderId'], $market_name);
                     if(isset($orderstatus['orderStatus'])){
                         continue;
                                 //unset($bot->signals[$strategy][$market_name]);
@@ -261,6 +141,7 @@ class Bot {
         $this->filesCls->addContent("init start");
         $this->initBotDataFromCliArgs();
         $this->initInstanceSettingsFromFile();
+        $this->exchangeObject = Exchanges\Base::getExchangeObject($this->xchnage, $this);
         $this->initApiAndSocket();
         $this->fillStrategies();
         $this->signals = $this->signals_cls->getOpeningSignals($this->strategies,$this->timeframe,$this->xchnage);
@@ -290,10 +171,7 @@ class Bot {
 
     private function fillCandles(){
         $this->fillCoinsArr();
-                
-		if($this->xchnage==="bittrex"){
-			$this->fill_btrx_candles();
-		}
+        $this->exchangeObject->fillCandles();
     }
 
     private function fillStrategies(){
@@ -323,16 +201,10 @@ class Bot {
     }
 
     private function initApiAndSocket(){
-        if($this->xchnage === "binance"){
-            $this->api = new \Binance\API($this->user_settings->binance->bnkey,$this->user_settings->binance->bnsecret);
-            $api = $this->api;
-        }
-        else if($this->xchnage === "bittrex"){
-            $this->client = new \Models\Exchanges\Bittrex\ClientBittrexAPI($this->user_settings->bittrex->btkey,$this->user_settings->bittrex->btsecret);
-            $this->api = new \Models\Exchanges\Bittrex\SignalR\ClientR("wss://socket.bittrex.com/signalr", ["corehub"]);
-            $api = $this->api;
-
-        }
+        $this->api = $this->exchangeObject->initApi();
+        $api = $this->api;
+        $this->client = $this->exchangeObject->initClient();
+        $client = $this->client;
         $this->filesCls->addContent($this->colors->info("Exchange: ".$this->xchnage));
     }
     
@@ -418,81 +290,8 @@ class Bot {
 
     public function get_top_x_coins($vol){
         global $bot_settings;
-		if($this->xchnage === "bittrex"){
-      $nonce=time();
-    $uri="https://bittrex.com/api/v1.1/public/getmarketsummaries";
-    $sign=@hash_hmac('sha512',$uri);
-    $ch = curl_init($uri);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('apisign:'.$sign));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $execResult = curl_exec($ch);
-    $obj = json_decode($execResult, true);
-			$obj = $obj['result'];
-    $j=0;
-        for($i=0;$i<count($obj);$i++){
-            $coins[$i] = $obj[$i];
-        }
-        $coinsa=[];		
-        for($i=0;$i<count($coins);$i++){
-            if($coins[$i]["BaseVolume"] >= $vol && strpos($coins[$i]["MarketName"],$this->mainCoinToTradeVersus)===0){
-                $ignore = false;
-                foreach($this->ignore_coins as $key=>$coin){
-                    if(strpos($coins[$i]["MarketName"],$coin)){
-                        $ignore=true;
-                        //unset($this->ignore_coins[$key]);
-                    }
-                }
-                if(!$ignore){
-
-					
-					$tmp_name = explode("-",$coins[$i]["MarketName"]);
-					$coins[$i]["MarketName"] = $tmp_name[1].$tmp_name[0];
-                    $coinsa[$j] = $coins[$i]["MarketName"];
-                    $j++;
-                }
-
-            }
-        }
-			//$this->coins_array = $coinsa;
-			
-		}
-		
-		
-		
-		else if($this->xchnage === "binance"){
-        $nonce=time();
-        $uri="https://api.binance.com/api/v1/ticker/24hr";
-        $sign= @hash_hmac('sha512',$uri);
-        $ch = curl_init($uri);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('apisign:'.$sign));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $execResult = curl_exec($ch);
-        $obj = json_decode($execResult, true);
-        //$filesCls->addContent(json_encode($obj));
-        $j=0;
-        for($i=0;$i<count($obj);$i++){
-            $coins[$i] = $obj[$i];
-        }
-        $coinsa=[];
-        for($i=0;$i<count($coins);$i++){
-            if($coins[$i]["quoteVolume"] >= $vol && strpos($coins[$i]["symbol"],$this->mainCoinToTradeVersus) > 2){
-                $ignore = false;
-                foreach($this->ignore_coins as $key=>$coin){
-                    if(strpos($coins[$i]["symbol"],$coin)){
-                        $ignore=true;
-                        //unset($this->ignore_coins[$key]);
-                    }
-                }
-                if(!$ignore){
-                    $coinsa[$j] = $coins[$i]["symbol"];
-                    $j++;
-                }
-
-            }
-        } 
-		}
+        $coinsa = $this->exchangeObject->getCoinsByVolume($vol);
         return count($coinsa) > 0 ? $coinsa : [];
-
     }
 
     public function initBotDataFromCliArgs(){
@@ -567,67 +366,6 @@ class Bot {
         $this->OHLVC['lows'] = $this->lows;
         $this->OHLVC['vols'] = $this->vols;
     }
-	
-	public function fill_btrx_candles(){
-		//$this->btrx_candles pass this var to  intiate_OHLVC when its time to check this coin latest trade
-		$names = $this->to_market_format("bittrex",$this->coins_array);
-		//print_r($names);
-		$timeframes_unifier = ["1m" => "oneMin", "5m" => "fiveMin", "30m" => "thirtyMin", "1h" => "hour", "1d"=>"day"];
-		foreach($names as $id=>$market){
-			$this->btrx_coins_format[$market] = $id;
-        	$nonce=time();
-    		$uri="https://international.bittrex.com/Api/v2.0/pub/market/GetTicks?marketName=$market&tickInterval=".$timeframes_unifier[$this->timeframe];
-			echo $uri;
-    		$sign=@hash_hmac('sha512',$uri);
-    
-    		$ch = curl_init($uri);
-        	curl_setopt($ch, CURLOPT_HTTPHEADER, array('apisign:'.$sign));
-        	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    		$execResult = curl_exec($ch);
-    		$obj = json_decode($execResult, true);
-			//print_r($obj);
-			$obj = $obj['result'];
-			if(!is_array($obj)){
-                var_dump($execResult);
-                continue;
-				//die();
-			}
-			foreach($obj as $index=>$candle){
-				$this->btrx_candles[$this->coins_array[$id]][$index]['open'] = $candle['O'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['close'] = $candle['C'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['high'] = $candle['H'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['low'] = $candle['L'];
-				$this->btrx_candles[$this->coins_array[$id]][$index]['volume'] = $candle['BV'];
-			}
-
-			
-			//sleep(60);
-        }
-        if(!is_array($this->btrx_candles)){
-            return;
-        }
-					print_r(array_keys($this->btrx_candles));
-			//die();
-	}
-	
-	public function to_market_format($xchange,$names_arr){
-		switch ($xchange){
-			case 'bittrex':
-				foreach($names_arr as $id => $name){
-					$tmp_name = explode($this->mainCoinToTradeVersus,$name);
-						$names_arr[$id] = "$this->mainCoinToTradeVersus-".$tmp_name[0];
-					}
-				
-				break;
-			case 'binance':
-				foreach($names_arr as $id => $name){
-					$tmp_name = explode("-",$name);
-						$names_arr[$id] = $tmp_name[1].$tmp_name[0];
-					}	
-				break;
-		}
-		return $names_arr;
-	}
     
     public function latest_scans(){
         global $latest_scan_results;
