@@ -150,6 +150,7 @@ class Bittrex extends Base{
                 continue;
                 //die();
             }
+            $this->botObject->filesCls->addContent('result: '.print_r($obj, true));
 			foreach($obj as $index=>$candle){
 				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['open'] = $candle['O'];
 				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['close'] = $candle['C'];
