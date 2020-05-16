@@ -132,7 +132,7 @@ class Bittrex extends Base{
 		foreach($names as $id=>$market){
 			$this->btrx_coins_format[$market] = $id;
         	$nonce=time();
-    		$uri="https://international.bittrex.com/Api/v2.0/pub/market/GetTicks?marketName=$market&tickInterval=".$timeframes_unifier[$this->timeframe];
+    		$uri="https://international.bittrex.com/Api/v2.0/pub/market/GetTicks?marketName=$market&tickInterval=".$timeframes_unifier[$this->botObject->timeframe];
 			echo $uri;
     		$sign=@hash_hmac('sha512',$uri);
     
