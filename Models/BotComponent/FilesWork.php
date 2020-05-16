@@ -13,6 +13,7 @@ class FilesWork{
         global $bot_settings;
         $this->pid = getmypid();
         $this->pids_file_path = $bot_settings->all_pids_file;
+        $this->bot_settings = $bot_settings;
         $this->log_file_path = $bot_settings->pids_log_folder."/".$this->pid.".pid.log";
         $this->msgs_to_web_folder = "msgs_to_web/";
         $this->msgs_from_web_folder="msgs_from_web/";
@@ -36,6 +37,13 @@ class FilesWork{
         //@file_put_contents(, $new_content); 
         $this->msgToWeb(date("H:i d/m/Y").": ".$new_content.PHP_EOL);
         return @file_put_contents($this->log_file_path,file_get_contents($this->log_file_path).PHP_EOL.date("H:i d/m/Y").": ".$new_content);
+    }
+
+    public function debug($msg){
+        if($this->bot_settings->debug ?? false){
+            return;
+        }
+        $this->addContent($this->colors->info($msg));
     }
     
     //msgs to web

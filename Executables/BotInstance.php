@@ -43,7 +43,7 @@ $api = $bot->getApi();
 $bot->run();
 // bwlo this point move to class bot
 //count is used to reload cinfig file from time to time, when count is 1000000, updates are bieng made;
-//$filesCls->addContent(var_dump($api));
+$filesCls->debug(var_dump($api));
 if($bot->xchnage!=="bittrex" && $api->loop != null){ // 15/05/2020 - not working needs to be fixed and into $bot->run()
 $api->loop->addPeriodicTimer(60*60, function() use (&$bot,$api) {
 	global $filesCls;

@@ -28,15 +28,15 @@ class Bot {
     public $mainCoinToTradeVersus = "BTC";
 
     public function run(){
-        $this->filesCls->addContent("run start");
+        $this->filesCls->debug("run start");
         $this->addApiLoopTimers();
-        $this->filesCls->addContent("timers added");
+        $this->filesCls->debug("timers added");
         if($this->isBacktesting){
-            $this->filesCls->addContent("backtesting start");
+            $this->filesCls->debug("backtesting start");
             $this->runBackTesting();
             die();
         }
-        $this->filesCls->addContent("before loop start");
+        $this->filesCls->debug("before loop start");
         $this->startLoop();
     }
 
@@ -138,7 +138,7 @@ class Bot {
 			$this->telegram = new \Models\Messaging\Telegram($user_settings->comm->telegram->bot_toekn,$user_settings->comm->telegram->tele_user_id);	
         }
         $this->cmnds = new Commands();
-        $this->filesCls->addContent("init start");
+        $this->filesCls->debug("init start");
         $this->initBotDataFromCliArgs();
         $this->initInstanceSettingsFromFile();
         $this->exchangeObject = Exchanges\Base::getExchangeObject($this->xchnage, $this);

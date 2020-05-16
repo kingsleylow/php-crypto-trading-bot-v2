@@ -135,14 +135,14 @@ class Bittrex extends Base{
         	$nonce=time();
     		$uri="https://international.bittrex.com/Api/v2.0/pub/market/GetTicks?marketName=$market&tickInterval=".$timeframes_unifier[$this->botObject->timeframe];
             echo $uri;
-            $this->botObject->filesCls->addContent('tried to open '.$uri);
+            $this->botObject->filesCls->debug('tried to open '.$uri);
     		$sign=@hash_hmac('sha512',$uri);
     
     		$ch = curl_init($uri);
         	curl_setopt($ch, CURLOPT_HTTPHEADER, array('apisign:'.$sign));
         	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $execResult = curl_exec($ch);
-            $this->botObject->filesCls->addContent('tried to open, result: '.$execResult);
+            $this->botObject->filesCls->debug('tried to open, result: '.$execResult);
     		$obj = json_decode($execResult, true);
 			//print_r($obj);
 			$obj = $obj['result'];
@@ -151,7 +151,7 @@ class Bittrex extends Base{
                 continue;
                 //die();
             }
-            $this->botObject->filesCls->addContent('result: '.print_r($obj, true));
+            $this->botObject->filesCls->debug('result: '.print_r($obj, true));
 			foreach($obj as $index=>$candle){
 				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['open'] = $candle['O'];
 				$this->btrx_candles[$this->botObject->coins_array[$id]][$index]['close'] = $candle['C'];
