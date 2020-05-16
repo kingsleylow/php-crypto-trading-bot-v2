@@ -2,17 +2,17 @@
 namespace Models\BotComponent;
 //to do: genrealize exhange functions and  extact each excahnge to diffrent class, with base, baseExchange, all functions should be abstract
 class Bot {
-    private $strategies = [];
-    private $opens=[];
-    private $closes=[];
-    private $highs=[];
-    private $lows=[];
-    private $min_vol=700;
-    private $signals_cls;
-    private $strategies_cls;
-    private $OHLVC=[];
+    public $strategies = [];
+    public $opens=[];
+    public $closes=[];
+    public $highs=[];
+    public $lows=[];
+    public $min_vol=700;
+    public $signals_cls;
+    public $strategies_cls;
+    public $OHLVC=[];
     public $coins_array = [];
-    private $ignore_coins =[];
+    public $ignore_coins =[];
     public $thisInstance = [];
     public $timeframe;
     public $simulator = true;
@@ -23,9 +23,9 @@ class Bot {
 	public $btrx_coins_format;
 	public $sim_id;
     public $telegram=null;
-    private $api;
+    public $api;
     public $filesCls;
-    private $mainCoinToTradeVersus = "BTC";
+    public $mainCoinToTradeVersus = "BTC";
 
     public function run(){
         $this->filesCls->addContent("run start");
