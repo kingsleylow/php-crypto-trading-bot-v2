@@ -141,7 +141,8 @@ class Bittrex extends Base{
     		$ch = curl_init($uri);
         	curl_setopt($ch, CURLOPT_HTTPHEADER, array('apisign:'.$sign));
         	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    		$execResult = curl_exec($ch);
+            $execResult = curl_exec($ch);
+            $this->botObject->filesCls->addContent('tried to open, result: '.$execResult);
     		$obj = json_decode($execResult, true);
 			//print_r($obj);
 			$obj = $obj['result'];
