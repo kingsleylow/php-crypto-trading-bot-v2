@@ -5,7 +5,7 @@ namespace Models\BotComponent\Exchanges;
 class Binance extends Base{
 
     public function __construct($botObject){
-        parent::construct($botObject);
+        parent::__construct($botObject);
     }
 
     public function fillCandles(){

@@ -6,7 +6,7 @@ class Bittrex extends Base{
 
     public function __construct($botObject){
         $this->client = $botObject->client;
-        parent::construct($botObject);
+        parent::__construct($botObject);
     }
 
     public function fillCandles(){
