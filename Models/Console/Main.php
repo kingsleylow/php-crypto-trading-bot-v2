@@ -352,7 +352,7 @@ $usage[$pid]['cpu'] = 0;
             
         
     }
-  echo "on the fly finish";
+    //echo "on the fly finish";
     }
     
     public function checkSocketStatus(){
